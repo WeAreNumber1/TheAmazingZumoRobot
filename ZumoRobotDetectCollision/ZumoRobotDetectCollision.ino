@@ -6,7 +6,8 @@ LSM303 compass;
 LSM303::vector<int16_t> vectorOffset = {0, 0, 0};
 LSM303::vector<int16_t> vectorValues = {0, 0, 0};
 boolean collisionDetected = false;
-#define COLLISION_THRESHOLD 1000   // MUST BE CHANGED/CALIBRATED
+#define COLLISION_THRESHOLD 6000   // MUST BE CHANGED/CALIBRATED
+
 
 void setup() {
   // Start up accelerometer
@@ -14,11 +15,19 @@ void setup() {
   compass.init();
   compass.enableDefault();
   // Collect the current values - simple calibration
+  calibrateAccelerator();
+}
+
+
+void calibrateAccelerator()
+{
   vectorOffset.x = compass.a.x;
   vectorOffset.y = compass.a.y;
   vectorOffset.z = compass.a.z;
 }
 
+
+// Reads new values, applies offset, etc
 void updateVectorValues()
 {
   vectorValues.x = compass.a.x - vectorOffset.x;
@@ -37,7 +46,10 @@ void loop() {
   // How to detect collision:
   if (collisionDetected)
   {
-    // do something
+    digitalWrite(13, HIGH);
+    delay(1000);// do something
+  } else {
+    digitalWrite(13, LOW);
   }
   
   // BIG WARNING: the accelerometers will pick up acceleration caused by us turning around etc
