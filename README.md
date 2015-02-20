@@ -1,7 +1,6 @@
 # TheAmazingZumoRobot
 I can haz all your code
 
+This is the project page for the zumo project.
 
-Things to do.  | Things done!
--------------  | -------------
-~~Calibrate the ligtsensor before start.~~ Done!  |  Now calibrates the lightsensor before start in the program, ZuperQuteZumo!
+&copy;WeAreNumber1
