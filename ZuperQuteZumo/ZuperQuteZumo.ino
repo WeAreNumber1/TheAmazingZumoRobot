@@ -71,7 +71,6 @@ void setup() {
 
 void loop() {
   //Handle state transitions and execute action to current state
-
   switch (currentState) {
     case SEARCH: search(); break;
     case ATTACK: attack(); break;
@@ -153,7 +152,6 @@ void search() {
   unsigned int position = 0;
   bool turnRight = true;
   bool borderDetected = false;
-  while (true) {
     // Read the new accelerometer values
     compass.read();
 
@@ -197,7 +195,6 @@ void search() {
       }
     }
   }
-}
 
 
 bool enemyInSight() {
