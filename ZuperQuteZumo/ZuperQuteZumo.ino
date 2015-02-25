@@ -16,10 +16,6 @@ LSM303::vector<int16_t> vectorValues = {0, 0, 0};
 boolean collisionDetected = false;
 #define COLLISION_THRESHOLD 4000   // MUST BE CHANGED/CALIBRATED?
 
-#define TIME_UNTIL_RELAX 500
-long int timeUntilRelax = 500;
-long int timeSinceScared;
-
 #define REVERSE_SPEED     400 // 0 is stopped, 400 is full speed
 #define TURN_SPEED        300
 #define FORWARD_SPEED     300
@@ -29,7 +25,6 @@ long int timeSinceScared;
 #define CHECK_DURATION    200 // ms
 #define LEFT 1  // turn direction
 #define RIGHT 2
-const int MAX_SPEED = 400;   // Max speed Zumo
 
 // Pins:
 const int echoPin = 6;
@@ -70,10 +65,8 @@ void setup() {
 
 void loop() {
   //Handle state transitions and execute action to current state
-
   switch (currentState) {
     case SEARCH: search(); break;
-    case ATTACK: attack(); break;
   }
 }
 
@@ -111,7 +104,6 @@ void calibrateAccelerator()
   vectorOffset.z = compass.a.z;
 }
 
-
 // Reads new values, applies offset, etc
 void updateVectorValues()
 {
@@ -120,7 +112,6 @@ void updateVectorValues()
   vectorValues.z = compass.a.z - vectorOffset.z;
   collisionDetected = (abs(vectorValues.x) + abs(vectorValues.y) > COLLISION_THRESHOLD);
 }
-
 
 //
 // Move Zumo backwards, then turn in given direction,
@@ -152,7 +143,6 @@ void search() {
   unsigned int position = 0;
   bool turnRight = true;
   bool borderDetected = false;
-  while (true) {
     // Read the new accelerometer values
     compass.read();
 
@@ -191,30 +181,15 @@ void search() {
           }else{
             motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
           }
-
         }
       }
     }
   }
-}
-
 
 bool enemyInSight() {
   unsigned long time = sonar.ping();
   float distance = sonar.convert_cm(time);
   if (distance < 60) {
-    return true;
-  }
-  return false;
-}
-
-void attack() {
-
-}
-
-bool repeat() {
-  updateVectorValues();
-  if (! enemyInSight() || !collisionDetected) {
     return true;
   }
   return false;
