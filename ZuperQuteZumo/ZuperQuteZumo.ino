@@ -73,7 +73,6 @@ void loop() {
   //Handle state transitions and execute action to current state
   switch (currentState) {
     case SEARCH: search(); break;
-    case ATTACK: attack(); break;
   }
 }
 
@@ -201,18 +200,6 @@ bool enemyInSight() {
   time = sonar.ping();
   distance = sonar.convert_cm(time);
   if (distance < 60) {
-    return true;
-  }
-  return false;
-}
-
-void attack() {
-
-}
-
-bool repeat() {
-  updateVectorValues();
-  if (! enemyInSight() || !collisionDetected) {
     return true;
   }
   return false;
