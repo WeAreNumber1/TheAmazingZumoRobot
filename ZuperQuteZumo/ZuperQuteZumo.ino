@@ -110,7 +110,6 @@ void calibrateAccelerator()
   vectorOffset.z = compass.a.z;
 }
 
-
 // Reads new values, applies offset, etc
 void updateVectorValues()
 {
@@ -119,7 +118,6 @@ void updateVectorValues()
   vectorValues.z = compass.a.z - vectorOffset.z;
   collisionDetected = (abs(vectorValues.x) + abs(vectorValues.y) > COLLISION_THRESHOLD);
 }
-
 
 //
 // Move Zumo backwards, then turn in given direction,
@@ -189,12 +187,10 @@ void search() {
           }else{
             motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
           }
-
         }
       }
     }
   }
-
 
 bool enemyInSight() {
   time = sonar.ping();
