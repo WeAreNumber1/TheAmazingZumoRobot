@@ -161,13 +161,13 @@ void search() {
     //  read new sensor values
     position = reflectanceSensors.readLine(sensors);
     // Check to see if the border line has been reached. If so, turn and move in other direction.
-    if (sensors[0] > BORDER_VALUE_LOW ) {
+    if (sensors[0] < BORDER_VALUE_LOW ) {
       // if leftmost sensor detects line, reverse and turn to the right
       borderDetected = true;
       turn(RIGHT);
     }
 
-    else if (sensors[5] > BORDER_VALUE_LOW) {
+    else if (sensors[5] < BORDER_VALUE_LOW) {
       // if rightmost sensor detects line, reverse and turn to the left
       borderDetected = true;
       turn(LEFT);
