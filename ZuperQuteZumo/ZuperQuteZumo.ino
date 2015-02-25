@@ -1,4 +1,6 @@
 //collision stuff
+#include <SoftwareSerial.h>
+#include <PLabBTSerial.h>
 #include <Wire.h>
 #include <LSM303.h>
 
@@ -21,7 +23,7 @@ boolean collisionDetected = false;
 #define FORWARD_SPEED     300
 #define ATTACK_SPEED     400
 #define REVERSE_DURATION  200 // ms
-#define TURN_DURATION     400 // ms
+#define TURN_DURATION     200 // ms
 #define CHECK_DURATION    200 // ms
 #define LEFT 1  // turn direction
 #define RIGHT 2
@@ -46,11 +48,15 @@ unsigned int sensors[6];
 
 // Define Robot STATES
 int currentState;
-#define SEARCH 1
-#define ATTACK 2
+#define GO 1
+#define SEARCH 2
+#define WAIT 3
 
 void setup() {
-  currentState = SEARCH;
+  // Start communication with bluetooth unit
+  btSerial.begin(9600);
+
+  currentState = WAIT;
   doVisionCalibration();
   delay(500);
 
@@ -64,10 +70,30 @@ void setup() {
 }
 
 void loop() {
+  // See if we have received a new character
+  int availableCount = btSerial.available();
+  if (availableCount > 0) {
+    char text[availableCount];
+    btSerial.read(text, availableCount);
+    readCommand(text);
+  }
   //Handle state transitions and execute action to current state
   switch (currentState) {
+    case WAIT: wait(); break;
+    case GO: go(); break;
     case SEARCH: search(); break;
   }
+}
+
+void readCommand (char *text) {
+  if (0 == strcmp("FIGHT", text)) {
+    currentState = GO;
+  } else if (0 == strcmp("SEARCH", text)) {
+    currentState = SEARCH;
+}
+
+wait(){
+  //JUST CHILLING...
 }
 
 void doVisionCalibration() {
@@ -140,7 +166,7 @@ void turn(int direction) {
 //STATE Search for prey. The robot....
 //blablabla
 bool turnRight = true;
-void search() {
+void go() {
   unsigned int position = 0;
   bool borderDetected = false;
     // Read the new accelerometer values
