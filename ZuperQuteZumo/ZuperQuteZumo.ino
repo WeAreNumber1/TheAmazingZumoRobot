@@ -31,11 +31,10 @@ long int timeSinceScared;
 #define RIGHT 2
 const int MAX_SPEED = 400;   // Max speed Zumo
 
-//US things:
+// Pins:
 const int echoPin = 6;
 const int triggerPin = 3;
-unsigned int time = 0;
-float distance = 0;
+// Sonar sensor values
 const int maxDistance = 300;
 NewPing sonar(triggerPin, echoPin, maxDistance);
 
@@ -193,8 +192,8 @@ void search() {
 
 
 bool enemyInSight() {
-  time = sonar.ping();
-  distance = sonar.convert_cm(time);
+  unsigned long time = sonar.ping();
+  float distance = sonar.convert_cm(time);
   if (distance < 60) {
     return true;
   }
