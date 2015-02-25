@@ -164,28 +164,14 @@ void search() {
       // if leftmost sensor detects line, reverse and turn to the right
 
       turn(RIGHT);
-//      while (repeat()) {
-//        if (repeat()) {
-//          motors.setSpeeds(200, -200 );
-//        }
-//        else {
-//          break;
-//        }
-//      }
+
     }
 
     else if (sensors[5] > BORDER_VALUE_LOW) {
       // if rightmost sensor detects line, reverse and turn to the left
 
       turn(LEFT);
-//      while (repeat()) {
-//        if (repeat()) {
-//          motors.setSpeeds(-200, 200 );
-//        }
-//        else {
-//          break;
-//        }
-//      }
+
     } else {
       if (collisionDetected) {
         //"Fight or Flight!"
@@ -207,11 +193,6 @@ void search() {
   }
 }
 
-bool borderDetection() {
-  //doesn't do anything.
-  //Will most likely remove later
-  return false;
-}
 
 bool enemyInSight() {
   time = sonar.ping();
