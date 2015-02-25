@@ -1,6 +1,8 @@
-//collision stuff
+//Bluetooth:#
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
+
+//collision stuff
 #include <Wire.h>
 #include <LSM303.h>
 
@@ -48,9 +50,14 @@ unsigned int sensors[6];
 
 // Define Robot STATES
 int currentState;
-#define GO 1
-#define SEARCH 2
-#define WAIT 3
+#define WAIT 1
+#define FIGHT 2
+#define SEARCH 3
+
+//Bluetooth things...
+const int btUnitTxPin = 1; // Connected to tx on bt unit
+const int btUnitRxPin = 0; // Connected to rx on bt unit
+PLabBTSerial btSerial(btUnitTxPin, btUnitRxPin);
 
 void setup() {
   // Start communication with bluetooth unit
@@ -80,19 +87,20 @@ void loop() {
   //Handle state transitions and execute action to current state
   switch (currentState) {
     case WAIT: wait(); break;
-    case GO: go(); break;
-    case SEARCH: search(); break;
+    case FIGHT: fight(); break;
+    case SEARCH: wait(); break;
   }
 }
 
 void readCommand (char *text) {
   if (0 == strcmp("FIGHT", text)) {
-    currentState = GO;
+    currentState = FIGHT;
   } else if (0 == strcmp("SEARCH", text)) {
     currentState = SEARCH;
 }
+}
 
-wait(){
+void wait(){
   //JUST CHILLING...
 }
 
@@ -166,7 +174,7 @@ void turn(int direction) {
 //STATE Search for prey. The robot....
 //blablabla
 bool turnRight = true;
-void go() {
+void fight() {
   unsigned int position = 0;
   bool borderDetected = false;
     // Read the new accelerometer values
@@ -195,7 +203,7 @@ void go() {
         //"Fight or Flight!"
         borderDetected = false;
       }
-      // otherwise, go straight
+      // otherwise, FIGHT straight
       else if (enemyInSight()) {
         motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
       } else {//Tanken er aa holde farten oppe for en liten stund etter en kollisjon.

@@ -1,0 +1,53 @@
+#include <SoftwareSerial.h>
+#include <PLabBTSerial.h>
+#include <ZumoMotors.h>
+
+//Define states...?
+int currentState;
+#define WAIT 1
+#define FIGHT 2
+#define SEARCH 3
+
+const int btUnitTxPin = 1; // Connected to tx on bt unit
+const int btUnitRxPin = 0; // Connected to rx on bt unit
+PLabBTSerial btSerial(btUnitTxPin, btUnitRxPin);
+
+// ZumoMotors motors;
+PLab_ZumoMotors PLab_motors;
+
+void setup(void)
+{
+  // Start communication with bluetooth unit
+  btSerial.begin(9600);
+}
+
+void loop()
+{
+  // See if we have received a new character
+  int availableCount = btSerial.available();
+  if (availableCount > 0) {
+    char text[availableCount];
+    btSerial.read(text, availableCount);
+    readCommand(text);
+  }
+  switch(currentState){
+    case WAIT: delay(10); break;
+    case FIGHT: fight(); break;
+    case SEARCH: search(); break;
+  }
+}
+
+void readCommand (char *text) {
+  if (0 == strcmp("FIGHT", text)) {
+      currentState = FIGHT;
+    } else if (0 == strcmp("SEARCH", text)) {
+      currentState = SEARCH;
+  }
+}
+
+void fight(){
+  motors.setSpeeds(200, 200);
+}
+void search(){
+  motors.setSpeeds(0, 0);
+}
