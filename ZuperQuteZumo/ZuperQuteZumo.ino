@@ -16,10 +16,6 @@ LSM303::vector<int16_t> vectorValues = {0, 0, 0};
 boolean collisionDetected = false;
 #define COLLISION_THRESHOLD 4000   // MUST BE CHANGED/CALIBRATED?
 
-#define TIME_UNTIL_RELAX 500
-long int timeUntilRelax = 500;
-long int timeSinceScared;
-
 #define REVERSE_SPEED     400 // 0 is stopped, 400 is full speed
 #define TURN_SPEED        300
 #define FORWARD_SPEED     300
@@ -29,7 +25,6 @@ long int timeSinceScared;
 #define CHECK_DURATION    200 // ms
 #define LEFT 1  // turn direction
 #define RIGHT 2
-const int MAX_SPEED = 400;   // Max speed Zumo
 
 //US things:
 const int echoPin = 6;
