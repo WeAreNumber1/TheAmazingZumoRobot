@@ -149,6 +149,7 @@ void turn(int direction) {
 //blablabla
 void search() {
   unsigned int position = 0;
+  bool borderDetected = false;
   while (true) {
     // Read the new accelerometer values
     compass.read();
@@ -159,58 +160,36 @@ void search() {
     //  read new sensor values
     position = reflectanceSensors.readLine(sensors);
     // Check to see if the border line has been reached. If so, turn and move in other direction.
-    if (sensors[0] > BORDER_VALUE_LOW ) {
+    if (sensors[0] < BORDER_VALUE_LOW ) {
       // if leftmost sensor detects line, reverse and turn to the right
-
+      borderDetected = true;
       turn(RIGHT);
-//      while (repeat()) {
-//        if (repeat()) {
-//          motors.setSpeeds(200, -200 );
-//        }
-//        else {
-//          break;
-//        }
-//      }
     }
 
-    else if (sensors[5] > BORDER_VALUE_LOW) {
+    else if (sensors[5] < BORDER_VALUE_LOW) {
       // if rightmost sensor detects line, reverse and turn to the left
-
+      borderDetected = true;
       turn(LEFT);
-//      while (repeat()) {
-//        if (repeat()) {
-//          motors.setSpeeds(-200, 200 );
-//        }
-//        else {
-//          break;
-//        }
-//      }
     } else {
       if (collisionDetected) {
         //"Fight or Flight!"
-        motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
-        timeSinceScared = millis();
-        //        timeUntilRelax += millis();
+        borderDetected = false;
       }
       // otherwise, go straight
       else if (enemyInSight()) {
         motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
       } else {//Tanken er aa holde farten oppe for en liten stund etter en kollisjon.
-        if (timeSinceScared + millis() > TIME_UNTIL_RELAX) {
-          motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
-        } else {
+        if (false) {
           motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
+        } else {
+          motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+
         }
       }
     }
   }
 }
 
-bool borderDetection() {
-  //doesn't do anything.
-  //Will most likely remove later
-  return false;
-}
 
 bool enemyInSight() {
   unsigned long time = sonar.ping();
