@@ -22,7 +22,7 @@ long int timeSinceScared;
 
 #define REVERSE_SPEED     400 // 0 is stopped, 400 is full speed
 #define TURN_SPEED        300
-#define FORWARD_SPEED     200
+#define FORWARD_SPEED     300
 #define ATTACK_SPEED     400
 #define REVERSE_DURATION  200 // ms
 #define TURN_DURATION     400 // ms
@@ -66,6 +66,7 @@ void setup() {
   compass.enableDefault();
   // Collect the current values - simple calibration
   calibrateAccelerator();
+  turn(RIGHT);
 }
 
 void loop() {
@@ -92,9 +93,9 @@ void doVisionCalibration() {
   int i;
   for (i = 0; i < 80; i++) {
     if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
-      motors.setSpeeds(-200, 200);
+      motors.setSpeeds(-100, -100);
     else
-      motors.setSpeeds(200, -200);
+      motors.setSpeeds(100, 100);
 
     reflectanceSensors.calibrate();
 
@@ -150,6 +151,7 @@ void turn(int direction) {
 //blablabla
 void search() {
   unsigned int position = 0;
+  bool turnRight = true;
   bool borderDetected = false;
   while (true) {
     // Read the new accelerometer values
@@ -164,12 +166,14 @@ void search() {
     if (sensors[0] < BORDER_VALUE_LOW ) {
       // if leftmost sensor detects line, reverse and turn to the right
       borderDetected = true;
+      turnRight = true;
       turn(RIGHT);
     }
 
     else if (sensors[5] < BORDER_VALUE_LOW) {
       // if rightmost sensor detects line, reverse and turn to the left
       borderDetected = true;
+      turnRight = false;
       turn(LEFT);
     } else {
       if (collisionDetected) {
@@ -183,7 +187,11 @@ void search() {
         if (false) {
           motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
         } else {
-          motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+          if (turnRight){
+            motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED-150);
+          }else{
+            motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
+          }
 
         }
       }
