@@ -139,9 +139,9 @@ void turn(int direction) {
 
 //STATE Search for prey. The robot....
 //blablabla
+bool turnRight = true;
 void search() {
   unsigned int position = 0;
-  bool turnRight = true;
   bool borderDetected = false;
     // Read the new accelerometer values
     compass.read();
