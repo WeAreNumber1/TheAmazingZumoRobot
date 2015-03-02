@@ -74,6 +74,9 @@ void setup() {
   // Collect the current values - simple calibration
   calibrateAccelerator();
   turn(RIGHT);
+  /*while(!button(ZUMO_BUTTON)){ //Wait for button press.
+    delay(20);                 //There might be a better way...Cuz This Thing doesn't work...
+  }*/
 }
 
 void loop() {
