@@ -213,8 +213,8 @@ void fight() {
         if (false) {
           motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
         } else {
-          if (turnRight){
-            motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED-150);
+          if (turnRight){ //Makes the robot turn a little bit to the right while moving forward.
+            motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED-150); //»»More effective Search for Prey.
           }else{
             motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
           }
