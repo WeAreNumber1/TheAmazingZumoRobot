@@ -1,3 +1,12 @@
+    ////////\\\\\\\\
+   //////|||||\\\\\\\
+  //««««WARNING»»»»»\\
+ //DO NOT MERGE WITH \\
+//  "MASTER BRANCH"   \\
+///////////\\\\\\\\\\\\\\
+//Note:
+//This is an early implementation of Bluetooth Remote Controll.
+
 //Bluetooth:#
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
