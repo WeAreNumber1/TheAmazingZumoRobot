@@ -91,7 +91,29 @@ void loop() {
   switch (currentState) {
     case WAIT: wait(); break;
     case FIGHT: fight(); break;
-    case SEARCH: wait(); break;
+    case SEARCH: search(); break;
+  }
+}
+
+void search(){
+  //Stops the robot
+  //Makes it turn around
+  //And when robot sees enemy, go to fightState and break;
+  int i;
+  for (i = 0; i < 80; i++) {                       //Something like this?
+    if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
+      if(enemyInSight()){     ///May simplyfie this code if we want to...
+        currentState = FIGHT;
+        break;
+        }else{
+          motors.setSpeeds(-200, 200);
+        }
+    else if(enemyInSight()){
+      currentState = FIGHT;
+      break;
+    }else{
+      motors.setSpeeds(200, -200);
+    }
   }
 }
 
@@ -203,7 +225,7 @@ void fight() {
       turn(LEFT);
     } else {
       if (collisionDetected) {
-        //"Fight or Flight!"
+        //"FIGHT or Flight!"
         borderDetected = false;
       }
       // otherwise, FIGHT straight
