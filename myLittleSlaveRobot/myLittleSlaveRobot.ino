@@ -1,14 +1,7 @@
-#include <PLab_ZumoMotors.h>
-#include <Pushbutton.h>
-#include <QTRSensors.h>
-#include <ZumoBuzzer.h>
-#include <ZumoMotors.h>
-#include <ZumoReflectanceSensorArray.h>
-
+// Including library to do serial communication with bluetooth
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
 #include <PLab_ZumoMotors.h>
-
 
 //Define states...?
 int currentState;
@@ -19,6 +12,9 @@ int currentState;
 const int btUnitTxPin = 1; // Connected to tx on bt unit
 const int btUnitRxPin = 0; // Connected to rx on bt unit
 PLabBTSerial btSerial(btUnitTxPin, btUnitRxPin);
+
+// ZumoMotors motors;
+PLab_ZumoMotors PLab_motors;
 
 void setup(void)
 {
@@ -40,7 +36,6 @@ void loop()
     case FIGHT: fight(); break;
     case SEARCH: search(); break;
   }
-
 }
 
 void readCommand (char *text) {
@@ -52,8 +47,8 @@ void readCommand (char *text) {
 }
 
 void fight(){
-  PLab_motors.setSpeeds(100, 100);
+  PLab_motors.setSpeeds(200, 200);
 }
 void search(){
-  PLab_motors.setSpeeds(-100, -100);
+  PLab_motors.setSpeeds(0, 0);
 }
