@@ -82,7 +82,7 @@ void loop() {
   if (availableCount > 0) {
     char text[availableCount];
     btSerial.read(text, availableCount);
-    readCommand(text);
+    currentState = readCommand(text);
   }
   //Handle state transitions and execute action to current state
   switch (currentState) {
@@ -92,11 +92,11 @@ void loop() {
   }
 }
 
-void readCommand (char *text) {
+int readCommand (char *text) {
   if (0 == strcmp("FIGHT", text)) {
-    currentState = FIGHT;
+    return FIGHT;
   } else if (0 == strcmp("SEARCH", text)) {
-    currentState = SEARCH;
+    return SEARCH;
 }
 }
 
@@ -119,9 +119,9 @@ void doVisionCalibration() {
   int i;
   for (i = 0; i < 80; i++) {
     if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
-      motors.setSpeeds(-100, -100);
+      motors.setSpeeds(-50, -50);
     else
-      motors.setSpeeds(100, 100);
+      motors.setSpeeds(50, 50);
 
     reflectanceSensors.calibrate();
 
