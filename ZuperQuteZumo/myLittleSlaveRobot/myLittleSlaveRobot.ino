@@ -1,6 +1,7 @@
+// Including library to do serial communication with bluetooth
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
-#include <ZumoMotors.h>
+#include <PLab_ZumoMotors.h>
 
 //Define states...?
 int currentState;
@@ -46,8 +47,8 @@ void readCommand (char *text) {
 }
 
 void fight(){
-  motors.setSpeeds(200, 200);
+  PLab_motors.setSpeeds(200, 200);
 }
 void search(){
-  motors.setSpeeds(0, 0);
+  PLab_motors.setSpeeds(0, 0);
 }
