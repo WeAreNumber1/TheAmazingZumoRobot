@@ -72,7 +72,7 @@ void setup() {
   // Start communication with bluetooth unit
   btSerial.begin(9600);
 
-  currentState = WAIT;
+  currentState = WAIT; //Set this to FIGHT for autonomeous robot. (No-remote...)
   doVisionCalibration();
   delay(500);
 
@@ -108,21 +108,9 @@ void search(){
   //Stops the robot
   //Makes it turn around
   //And when robot sees enemy, go to fightState and break;
-  int i;
-  for (i = 0; i < 80; i++) {                       //Something like this?
-    if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
-      if(enemyInSight()){     ///May simplyfie this code if we want to...
-        currentState = FIGHT;
-        break;
-        }else{
-          motors.setSpeeds(-200, 200);
-        }
-    else if(enemyInSight()){
+  motors.setSpeeds(-150,150);
+    if(enemyInSight()){
       currentState = FIGHT;
-      break;
-    }else{
-      motors.setSpeeds(200, -200);
-    }
   }
 }
 
@@ -131,7 +119,7 @@ int readCommand (char *text) {
     return FIGHT;
   } else if (0 == strcmp("SEARCH", text)) {
     return SEARCH;
-}
+  }
 }
 
 void wait(){
