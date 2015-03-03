@@ -194,7 +194,7 @@ void fight() {
     compass.read();
 
     // Collect the new values
-    updateVectorValues();
+    updateVectorValues(); //Todo: implement some delay so that it doesn't update while right after accelerating/(turning).
 
     //  read new sensor values
     position = reflectanceSensors.readLine(sensors);
@@ -205,7 +205,6 @@ void fight() {
       turnRight = true;
       turn(RIGHT);
     }
-
     else if (sensors[5] < BORDER_VALUE_LOW) {
       // if rightmost sensor detects line, reverse and turn to the left
       borderDetected = true;
@@ -220,7 +219,7 @@ void fight() {
       else if (enemyInSight()) {
         motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
       } else {//Tanken er aa holde farten oppe for en liten stund etter en kollisjon.
-        if (false) {
+        if (borderDetected==false) { //The robot will drive straight forward in attack speed until it hits border.
           motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
         } else {
           if (turnRight){ //Makes the robot turn a little bit to the right while moving forward.
