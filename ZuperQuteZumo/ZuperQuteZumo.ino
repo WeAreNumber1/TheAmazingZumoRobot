@@ -94,13 +94,16 @@ void loop() {
   if (availableCount > 0) {
     char text[availableCount];
     btSerial.read(text, availableCount);
-    currentState = readCommand(text);
+    int a =  readCommand(text);
+    if (currentState != a){
+      currentState = a;
+    }
   }
   //Handle state transitions and execute action to current state
-  switch (currentState) {
-    case WAIT: wait(); break;
-    case FIGHT: fight(); break;
-    case SEARCH: search(); break;
+  if (currentState == SEARCH){
+    wait();
+  }else if (currentState == FIGHT) {
+    fight();
   }
 }
 
@@ -124,6 +127,7 @@ int readCommand (char *text) {
 
 void wait(){
   //JUST CHILLING...
+  motors.setSpeeds(0,0);
 }
 
 void doVisionCalibration() {
@@ -172,7 +176,7 @@ void turn(int direction) {
     delay(REVERSE_DURATION);
     motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
     delay(TURN_DURATION);
-    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+    motors.setSpeeds(0, 0);
   }
   else // turn left
   {
@@ -180,7 +184,7 @@ void turn(int direction) {
     delay(REVERSE_DURATION);
     motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
     delay(TURN_DURATION);
-    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+    motors.setSpeeds(0, 0);
   }
 }
 
@@ -218,15 +222,11 @@ void fight() {
       // otherwise, FIGHT straight
       else if (enemyInSight()) {
         motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
-      } else {//Tanken er aa holde farten oppe for en liten stund etter en kollisjon.
-        if (borderDetected==false) { //The robot will drive straight forward in attack speed until it hits border.
-          motors.setSpeeds(ATTACK_SPEED, ATTACK_SPEED);
-        } else {
-          if (turnRight){ //Makes the robot turn a little bit to the right while moving forward.
-            motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED-150); //»»More effective Search for Prey.
-          }else{
-            motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
-          }
+      } else {
+        if (turnRight){ //Makes the robot turn a little bit to the right while moving forward.
+          motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED-150); //»»More effective Search for Prey.
+        }else{
+          motors.setSpeeds(FORWARD_SPEED-150, FORWARD_SPEED);
         }
       }
     }
@@ -235,7 +235,7 @@ void fight() {
 bool enemyInSight() {
   unsigned long time = sonar.ping();
   float distance = sonar.convert_cm(time);
-  if (distance < 60) {
+  if (distance < 50) {
     return true;
   }
   return false;
