@@ -61,8 +61,9 @@ unsigned int sensors[6];
 int currentState;
 #define WAIT 1
 #define FIGHT 2
-#define SEARCH 3
-#define FLEE 4
+#define TR 3
+#define TL 4
+#define STOP 5
 
 //Bluetooth things...
 const int btUnitTxPin = 1; // Connected to tx on bt unit
@@ -101,40 +102,46 @@ void loop() {
     }
   }
   //Handle state transitions and execute action to current state
-  if (currentState == SEARCH){
-    wait();
+  if (currentState == TR){
+    search(true);
   }else if (currentState == FIGHT) {
     fight();
-  }else if (currentState == FLEE){
-    flee();
+  }else if (currentState ==TL){
+    search(false);
+  }else if (currentState == STOP){
+    stopMotors();
   }
 }
 
-void flee(){
-  motors.setSpeeds(500,500);
-  if (sensors[0] < BORDER_VALUE_LOW ) {
-    turn(RIGHT);
-  }
-  else if (sensors[5] < BORDER_VALUE_LOW) {
-    turn(LEFT);
-  }
-}
-
-void search(){
+void search(bool a){
   //Stops the robot
   //Makes it turn around
   //And when robot sees enemy, go to fightState and break;
-  motors.setSpeeds(-150,150);
-    if(enemyInSight()){
+  if (a){
+    motors.setSpeeds(300,-300);
+  }else{
+    motors.setSpeeds(-300,300);
+  }
+  unsigned long time = sonar.ping();
+  float distance = sonar.convert_cm(time);
+  if (distance < 45) {
       currentState = FIGHT;
   }
+}
+
+void stopMotors(){
+  motors.setSpeeds(0,0);
 }
 
 int readCommand (char *text) {
   if (0 == strcmp("FIGHT", text)) {
     return FIGHT;
-  } else if (0 == strcmp("SEARCH", text)) {
-    return SEARCH;
+  } else if (0 == strcmp("TR", text)) {
+    return TR;
+  } else if(0 == strcmp("TL",text)){
+    return TL;
+  } else if (0 == strcmp("STOP", text)) {
+    return STOP;
   }
 }
 
