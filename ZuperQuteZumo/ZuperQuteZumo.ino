@@ -235,7 +235,7 @@ void fight() {
 bool enemyInSight() {
   unsigned long time = sonar.ping();
   float distance = sonar.convert_cm(time);
-  if (distance < 50) {
+  if (distance < 60) {
     return true;
   }
   return false;
