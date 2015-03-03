@@ -62,6 +62,7 @@ int currentState;
 #define WAIT 1
 #define FIGHT 2
 #define SEARCH 3
+#define FLEE 4
 
 //Bluetooth things...
 const int btUnitTxPin = 1; // Connected to tx on bt unit
@@ -104,6 +105,18 @@ void loop() {
     wait();
   }else if (currentState == FIGHT) {
     fight();
+  }else if (currentState == FLEE){
+    flee();
+  }
+}
+
+void flee(){
+  motors.setSpeeds(500,500);
+  if (sensors[0] < BORDER_VALUE_LOW ) {
+    turn(RIGHT);
+  }
+  else if (sensors[5] < BORDER_VALUE_LOW) {
+    turn(LEFT);
   }
 }
 
