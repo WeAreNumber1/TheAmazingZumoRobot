@@ -127,16 +127,9 @@ void wait(){
 }
 
 void doVisionCalibration() {
-  //
-  // -- Rotates to calibrate IR-reflectance sensors
-  //
+  // -- Drives back and fourth to calibrate IR-reflectance sensors
   reflectanceSensors.init();
-  // Turn on LED to indicate we are in calibration mode
-  /*pinMode(callibrateLedPin, OUTPUT);
-  digitalWrite(callibrateLedPin, HIGH);*/
-
   // Wait 1 second and then begin automatic sensor calibration
-  // by rotating in place to sweep the sensors over the line
   delay(1000);
   int i;
   for (i = 0; i < 80; i++) {
@@ -144,9 +137,7 @@ void doVisionCalibration() {
       motors.setSpeeds(-50, -50);
     else
       motors.setSpeeds(50, 50);
-
     reflectanceSensors.calibrate();
-
     // Since our counter runs to 80, the total delay will be
     // 80*20 = 1600 ms.
     delay(20);
