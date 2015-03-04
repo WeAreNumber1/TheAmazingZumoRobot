@@ -85,15 +85,6 @@ void setup() {
   // Collect the current values - simple calibration
   calibrateAccelerator();
   turn(RIGHT);
-  int availableCount = btSerial.available();
-  while(!button.isPressed() || !(availableCount > 0)){
-    //Running in circles. Doin NADA!
-    availableCount = btSerial.available();
-    if(button.isPressed()){
-      currentState = FIGHT; // Setting mode to automatic.
-      break;
-    }
-  }
 }
 
 void loop() {
@@ -105,6 +96,14 @@ void loop() {
     int a =  readCommand(text);
     if (currentState != a){
       currentState = a;
+    }
+  }
+  if(button.isPressed()){
+    if(currentState == FIGHT){
+      currentState = STOP;
+      button.waitForButton(); //Waits for new button press.
+    }else{
+      currentState = FIGHT;
     }
   }
   //Handle state transitions and execute action to current state
