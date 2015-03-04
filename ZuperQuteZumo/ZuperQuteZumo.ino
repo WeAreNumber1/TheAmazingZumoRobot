@@ -85,9 +85,15 @@ void setup() {
   // Collect the current values - simple calibration
   calibrateAccelerator();
   turn(RIGHT);
-  /*while(!button(ZUMO_BUTTON)){ //Wait for button press.
-    delay(20);                 //There might be a better way...Cuz This Thing doesn't work...
-  }*/
+  int availableCount = btSerial.available();
+  while(!button.isPressed() || !(availableCount > 0)){
+    //Running in circles. Doin NADA!
+    availableCount = btSerial.available();
+    if(button.isPressed()){
+      currentState = FIGHT; // Setting mode to automatic.
+      break;
+    }
+  }
 }
 
 void loop() {
