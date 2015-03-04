@@ -99,12 +99,8 @@ void loop() {
     }
   }
   if(button.isPressed()){
-    if(currentState == FIGHT){
-      currentState = STOP;
-      button.waitForButton(); //Waits for new button press.
-    }else{
-      currentState = FIGHT;
-    }
+    delay(200); //Wait 2 sec
+    currentState = FIGHT; //Fight
   }
   //Handle state transitions and execute action to current state
   if (currentState == TR){
