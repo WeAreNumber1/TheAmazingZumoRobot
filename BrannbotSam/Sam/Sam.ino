@@ -67,8 +67,7 @@ void loop() {
   int m1Speed = MAX_SPEED + speedDifference;
   int m2Speed = MAX_SPEED - speedDifference;
 
-//TODO!
-//Stop at perpendicular lines... Blah!
+  //Navigates to destination.
   cooldown --;
   if (cooldown <= 0 && sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
     motors.setSpeeds(0,0);
