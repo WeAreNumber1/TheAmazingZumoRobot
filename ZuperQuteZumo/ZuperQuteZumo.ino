@@ -21,6 +21,10 @@
 #include <Pushbutton.h>
 #include <NewPing.h>
 
+//Bluetooth:#
+#include <SoftwareSerial.h>
+#include <PLabBTSerial.h>
+
 //collision stuff
 // initialize vector values
 LSM303 compass;
@@ -29,9 +33,9 @@ LSM303::vector<int16_t> vectorValues = {0, 0, 0};
 boolean collisionDetected = false;
 #define COLLISION_THRESHOLD 4000   // MUST BE CHANGED/CALIBRATED?
 
-#define REVERSE_SPEED     400 // 0 is stopped, 400 is full speed
-#define TURN_SPEED        300
-#define FORWARD_SPEED     300
+#define REVERSE_SPEED     300 // 0 is stopped, 400 is full speed
+#define TURN_SPEED        250
+#define FORWARD_SPEED     250
 #define ATTACK_SPEED     400
 #define REVERSE_DURATION  200 // ms
 #define TURN_DURATION     200 // ms
@@ -57,8 +61,14 @@ unsigned int sensors[6];
 // Define thresholds for border
 #define BORDER_VALUE_LOW  800 // border low
 
+//Bluetooth things...
+const int btUnitTxPin = 1; // Connected to tx on bt unit
+const int btUnitRxPin = 0; // Connected to rx on bt unit
+PLabBTSerial btSerial(btUnitTxPin, btUnitRxPin);
+
 // Define Robot STATES
 int currentState;
+<<<<<<< Updated upstream
 #define WAIT 1
 #define FIGHT 2
 #define TR 3
@@ -75,6 +85,13 @@ void setup() {
   btSerial.begin(9600);
 
   currentState = WAIT; //Set this to FIGHT for autonomeous robot. (No-remote...)
+=======
+#define FIGHT 1
+#define ATTACK 2
+
+void setup() {
+  currentState = FIGHT;
+>>>>>>> Stashed changes
   doVisionCalibration();
   delay(500);
 
@@ -89,6 +106,7 @@ void setup() {
 
 void loop() {
   // See if we have received a new character
+<<<<<<< Updated upstream
   int availableCount = btSerial.available();
   if (availableCount > 0) {
     char text[availableCount];
@@ -151,6 +169,29 @@ void wait(){
   motors.setSpeeds(0,0);
 }
 
+=======
+ int availableCount; //= btSerial.available();
+  if (availableCount > 0) {
+    char text[availableCount];
+    btSerial.read(text, availableCount);
+    currentState = readCommand(text);
+  //Handle state transitions and execute action to current state
+    switch (currentState) {
+      case FIGHT: fight(); break;
+    }
+  }
+}
+
+int readCommand (char *text) {
+  if (0 == strcmp("FIGHT", text)) {
+    return FIGHT;
+  } else if (0 == strcmp("SEARCH", text)) {
+    return FIGHT;
+  }
+}
+
+
+>>>>>>> Stashed changes
 void doVisionCalibration() {
   // -- Drives back and fourth to calibrate IR-reflectance sensors
   reflectanceSensors.init();
@@ -162,6 +203,10 @@ void doVisionCalibration() {
       motors.setSpeeds(-50, -50);
     else
       motors.setSpeeds(50, 50);
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     reflectanceSensors.calibrate();
     // Since our counter runs to 80, the total delay will be
     // 80*20 = 1600 ms.
@@ -213,6 +258,10 @@ void turn(int direction) {
 //blablabla
 bool turnRight = true;
 void fight() {
+<<<<<<< Updated upstream
+=======
+  while (true){
+>>>>>>> Stashed changes
   unsigned int position = 0;
   bool borderDetected = false;
     // Read the new accelerometer values
@@ -252,11 +301,11 @@ void fight() {
       }
     }
   }
-
+}
 bool enemyInSight() {
   unsigned long time = sonar.ping();
   float distance = sonar.convert_cm(time);
-  if (distance < 60) {
+  if (distance < 40) {
     return true;
   }
   return false;
