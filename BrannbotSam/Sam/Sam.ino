@@ -9,6 +9,9 @@ Pushbutton button(ZUMO_BUTTON);
 int lastError = 0;
 const int MAX_SPEED = 200;
 
+// Define thresholds for border
+#define BORDER_VALUE_LOW  400 // border low
+
 void setup() {
   //Setup Things...
   // Initialize the reflectance sensors module
@@ -61,8 +64,9 @@ void loop() {
 
 //TODO!
 //Stop at perpendicular lines... Blah!
-
-
+  if (sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
+    motors.setSpeeds(0,0);
+  }else{
   // Here we constrain our motor speeds to be between 0 and MAX_SPEED.
   // Generally speaking, one motor will always be turning at MAX_SPEED
   // and the other will be at MAX_SPEED-|speedDifference| if that is positive,
@@ -78,4 +82,5 @@ void loop() {
     m2Speed = MAX_SPEED;
 
   motors.setSpeeds(m1Speed, m2Speed);
+  }
 }
