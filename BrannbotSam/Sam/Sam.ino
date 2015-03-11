@@ -23,17 +23,22 @@ void setup() {
   int i;
   for (i = 0; i < 80; i++){
     if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
-      motors.setSpeeds(-200, 200);
+      motors.setSpeeds(-100, -100);
     else
-      motors.setSpeeds(200, -200);
+      motors.setSpeeds(100, 100);
     reflectanceSensors.calibrate();
 
     // Since our counter runs to 80, the total delay will be
     // 80*20 = 1600 ms.
-    delay(20);
+    delay(10);
   }
+  motors.setSpeeds(200,0);
+  delay(400);
+  /*button.waitForButton();*/
 }
 
+int cooldown = 0;
+int destination = 4; //Write the destination here.
 void loop() {
   //Main program
   unsigned int sensors[6];
@@ -64,8 +69,20 @@ void loop() {
 
 //TODO!
 //Stop at perpendicular lines... Blah!
-  if (sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
+  cooldown --;
+  if (cooldown <= 0 && sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
     motors.setSpeeds(0,0);
+    delay(20);
+    if (destination > 2 ){
+      motors.setSpeeds(200,200);
+      destination -= 2;
+     }else if (destination == 2){
+      motors.setSpeeds(0,200);
+    }else{
+      motors.setSpeeds(200,0);
+    }
+    delay(500);
+    cooldown = 200;
   }else{
   // Here we constrain our motor speeds to be between 0 and MAX_SPEED.
   // Generally speaking, one motor will always be turning at MAX_SPEED
