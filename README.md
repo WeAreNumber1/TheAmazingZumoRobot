@@ -4,8 +4,7 @@ I can haz all your code
 This is the project page for the zumo project.
 
 #Current Project is "Brannbot Sam".
-"Sam" is a robot whose task is to put out all the fires, thus saving the city.
------------------------------------- 
+- "Sam" is a robot whose task is to put out all the fires, thus saving the city.
 
 What the different folders contains.
 ------------------------------------
