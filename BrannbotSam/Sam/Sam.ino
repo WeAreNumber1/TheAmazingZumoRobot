@@ -3,6 +3,16 @@
 #include <ZumoMotors.h>
 #include <Pushbutton.h>
 
+
+#include "PLab_IRremote.h"
+/*-----( Declare Constants )-----*/
+int receiver = 10; // pin 1 of IR receiver to Arduino digital pin 11
+
+/*-----( Declare objects )-----*/
+IRrecv irrecv(receiver);           // create instance of 'irrecv'
+decode_results results;            // create instance of 'decode_results'
+/*-----( Declare Variables )-----*/
+
 ZumoReflectanceSensorArray reflectanceSensors;
 ZumoMotors motors;
 Pushbutton button(ZUMO_BUTTON);
@@ -35,6 +45,10 @@ void setup() {
   motors.setSpeeds(200,0);
   delay(400);
   /*button.waitForButton();*/
+
+  irrecv.enableIRIn(); // Start the receiver
+  irrecv.blink13(false); // DO not blink pin 13 as feedback.
+  pinMode(13, OUTPUT);
 }
 
 int cooldown = 0;
@@ -100,3 +114,31 @@ void loop() {
   motors.setSpeeds(m1Speed, m2Speed);
   }
 }
+
+void IRcodeSetState(int value) // takes action based on IR code received
+{
+  switch(value)
+  {
+  case IR_UP: digitalWrite(13, HIGH); Serial.println(" UP"); break;
+  /*case IR_LEFT: Serial.println(" LEFT");    break;
+  case IR_OK: Serial.println(" -OK-");    break;
+  case IR_RIGHT: Serial.println(" RIGHT");   break;
+  case IR_DOWN: Serial.println(" DOWN"); break;
+  case IR_1: Serial.println(" 1");    break;
+  case IR_2: Serial.println(" 2");    break;
+  case IR_3: Serial.println(" 3");    break;
+  case IR_4: Serial.println(" 4");    break;
+  case IR_5: Serial.println(" 5");    break;
+  case IR_6: Serial.println(" 6");    break;
+  case IR_7: Serial.println(" 7");    break;
+  case IR_8: Serial.println(" 8");    break;
+  case IR_9: Serial.println(" 9");    break;
+  case IR_STAR: Serial.println(" *");    break;
+  case IR_0: Serial.println(" 0");    break;
+  case IR_HASH: Serial.println(" #");    break;*/
+  case IR_REPEAT: currentState = REPEAT;break;
+  default:
+    //Do something default...
+    digitalWrite(13, LOW);
+  }// End Case
+} //END translateIR
