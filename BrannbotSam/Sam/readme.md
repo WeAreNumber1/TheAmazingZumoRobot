@@ -11,3 +11,4 @@ Make the Sam program here.
     + Go back to start.
     + /Or maybe: Find quickest way to next robot in distress.
 2. Communication with other Arduinos
+  + Implement IRRecieve and go to given place.
