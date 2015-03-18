@@ -4,6 +4,8 @@
 #include <ZumoBuzzer.h>
 #include <ZumoMotors.h>
 #include <ZumoReflectanceSensorArray.h>
+// Skriv # define USE_IR (uten det første mellomrommet) for å bruke IR
+#define USE_IR
 
 ZumoReflectanceSensorArray reflectanceSensors;
 ZumoMotors motors;
@@ -14,6 +16,7 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
+#ifdef USE_IR
 #include <PLab_IRremote.h>
 /*-----( Declare Constants )-----*/
 int receiver = 6; // pin 1 of IR receiver to Arduino digital pin 11
@@ -23,11 +26,15 @@ IRrecv irrecv(receiver);           // create instance of 'irrecv'
 decode_results results;            // create instance of 'decode_results'
 /*-----( Declare Variables )-----*/
 int destination;
+#else
+int destination = 4;
+#endif
 
 void setup() {
   //Setup Things...
   // Initialize the reflectance sensors module
   reflectanceSensors.init();
+  Serial.begin(9600);
 
   // Wait for the user button to be pressed and released
   button.waitForButton();
@@ -49,16 +56,20 @@ void setup() {
   delay(400);
   motors.setSpeeds(0,0);
   /*button.waitForButton();*/
+#ifdef USE_IR
   irrecv.enableIRIn(); // Start the receiver
   irrecv.blink13(false); // DO not blink pin 13 as feedback.
+#endif
   pinMode(13, OUTPUT);
-
+#ifdef USE_IR
   //Wait IR message!
   while(!(irrecv.decode(&results))) // have we received an IR signal?
   {};
   destination = IRcodeSetDestination(results.value);
   irrecv.resume(); // receive the next value
-
+#else
+  button.waitForButton();
+#endif
 
 }
 
@@ -71,6 +82,7 @@ void loop() {
   // argument to readLine() here, even though we are not interested in the
   // individual sensor readings
   int position = reflectanceSensors.readLine(sensors);
+  Serial.println(position);
 
   // Our "error" is how far we are away from the center of the line, which
   // corresponds to position 2500.
@@ -107,24 +119,25 @@ void loop() {
     delay(500);
     cooldown = 200;
   }else{
-  // Here we constrain our motor speeds to be between 0 and MAX_SPEED.
-  // Generally speaking, one motor will always be turning at MAX_SPEED
-  // and the other will be at MAX_SPEED-|speedDifference| if that is positive,
-  // else it will be stationary.  For some applications, you might want to
-  // allow the motor speed to go negative so that it can spin in reverse.
-  if (m1Speed < 0)
-    m1Speed = 0;
-  if (m2Speed < 0)
-    m2Speed = 0;
-  if (m1Speed > MAX_SPEED)
-    m1Speed = MAX_SPEED;
-  if (m2Speed > MAX_SPEED)
-    m2Speed = MAX_SPEED;
-
-  motors.setSpeeds(m1Speed, m2Speed);
+    // Here we constrain our motor speeds to be between 0 and MAX_SPEED.
+    // Generally speaking, one motor will always be turning at MAX_SPEED
+    // and the other will be at MAX_SPEED-|speedDifference| if that is positive,
+    // else it will be stationary.  For some applications, you might want to
+    // allow the motor speed to go negative so that it can spin in reverse.
+    if (m1Speed < 0)
+      m1Speed = 0;
+    if (m2Speed < 0)
+      m2Speed = 0;
+    if (m1Speed > MAX_SPEED)
+      m1Speed = MAX_SPEED;
+    if (m2Speed > MAX_SPEED)
+      m2Speed = MAX_SPEED;
+  
+    motors.setSpeeds(m1Speed, m2Speed);
   }
 }
 
+#ifdef USE_IR
 int IRcodeSetDestination(int value) // takes action based on IR code received
 {
   switch(value)
@@ -135,3 +148,4 @@ int IRcodeSetDestination(int value) // takes action based on IR code received
     case IR_4: return  4;
   }// End Case
 } //END translateIR
+#endif
