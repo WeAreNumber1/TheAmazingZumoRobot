@@ -1,3 +1,7 @@
+#include <PLab_IRremote.h>
+#include <PLab_IRremoteInt.h>
+//#include <PLab_PushButton.h> //trenger vi denne?
+
 #include <QTRSensors.h>
 #include <ZumoReflectanceSensorArray.h>
 #include <ZumoMotors.h>
@@ -11,6 +15,16 @@ const int MAX_SPEED = 200;
 
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
+
+#include "PLab_IRremote.h"
+/*-----( Declare Constants )-----*/
+int receiver = 2; // pin 1 of IR receiver to Arduino digital pin 11
+
+/*-----( Declare objects )-----*/
+IRrecv irrecv(receiver);           // create instance of 'irrecv'
+decode_results results;            // create instance of 'decode_results'
+/*-----( Declare Variables )-----*/
+int destination;
 
 void setup() {
   //Setup Things...
@@ -31,14 +45,23 @@ void setup() {
     // Since our counter runs to 80, the total delay will be
     // 80*20 = 1600 ms.
     delay(10);
+
   }
   motors.setSpeeds(200,0);
   delay(400);
+  motors.setSpeeds(0,0);
   /*button.waitForButton();*/
+  irrecv.enableIRIn(); // Start the receiver
+  irrecv.blink13(false); // DO not blink pin 13 as feedback.
+  pinMode(13, OUTPUT);
+
+  //Wait IR message!
+  while(!(irrecv.decode(&results))) // have we received an IR signal?
+  {};
+  destination = IRcodeSetDestination(results.value);
 }
 
 int cooldown = 0;
-int destination = 4; //Write the destination here.
 void loop() {
   //Main program
   unsigned int sensors[6];
@@ -70,7 +93,7 @@ void loop() {
   //Navigates to destination.
   cooldown --;
   if (cooldown <= 0 && sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
-    motors.setSpeeds(0,0);
+  //  motors.setSpeeds(0,0);
     delay(20);
     if (destination > 2 ){
       motors.setSpeeds(200,200);
@@ -100,3 +123,14 @@ void loop() {
   motors.setSpeeds(m1Speed, m2Speed);
   }
 }
+
+int IRcodeSetDestination(int value) // takes action based on IR code received
+{
+  switch(value)
+  {
+    case IR_1: return  1;
+    case IR_2: return  2;
+    case IR_3: return  3;
+    case IR_4: return  4;
+  }// End Case
+} //END translateIR
