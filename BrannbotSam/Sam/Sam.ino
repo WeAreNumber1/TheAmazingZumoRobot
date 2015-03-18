@@ -1,11 +1,9 @@
-#include <PLab_IRremote.h>
-#include <PLab_IRremoteInt.h>
-//#include <PLab_PushButton.h> //trenger vi denne?
-
-#include <QTRSensors.h>
-#include <ZumoReflectanceSensorArray.h>
-#include <ZumoMotors.h>
+/*#include <PLab_ZumoMotors.h>*/
 #include <Pushbutton.h>
+#include <QTRSensors.h>
+#include <ZumoBuzzer.h>
+#include <ZumoMotors.h>
+#include <ZumoReflectanceSensorArray.h>
 
 ZumoReflectanceSensorArray reflectanceSensors;
 ZumoMotors motors;
@@ -16,9 +14,9 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-#include "PLab_IRremote.h"
+#include <PLab_IRremote.h>
 /*-----( Declare Constants )-----*/
-int receiver = 2; // pin 1 of IR receiver to Arduino digital pin 11
+int receiver = 6; // pin 1 of IR receiver to Arduino digital pin 11
 
 /*-----( Declare objects )-----*/
 IRrecv irrecv(receiver);           // create instance of 'irrecv'
@@ -59,6 +57,9 @@ void setup() {
   while(!(irrecv.decode(&results))) // have we received an IR signal?
   {};
   destination = IRcodeSetDestination(results.value);
+  irrecv.resume(); // receive the next value
+
+
 }
 
 int cooldown = 0;
