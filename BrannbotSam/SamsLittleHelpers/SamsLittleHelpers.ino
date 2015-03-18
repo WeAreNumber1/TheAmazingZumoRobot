@@ -1,11 +1,14 @@
+//How to install IR-Sensor
+//Use pin 3. Thats it! You're done!
+
 #include "PLab_IRremote.h"
 IRsend irsend;
 
-unsigned long IDENTITY = 1;
+unsigned long IDENTITY = 4;
 
 void setup()
 {
-  /*Serial.begin(9600); */ //Dont think we need this...
+  Serial.begin(9600);
   randomSeed(analogRead(7));
 }
 
@@ -25,15 +28,16 @@ boolean fireIsPutOut()
 
 void loop()
 {
-  if (millis() > timeToBurn)
-  {
+  /*if (millis() > timeToBurn)
+  {*/
     // WE'RE BURNING
     // TELL SAMBOT
     irsend.sendNEC(IDENTITY, 32);
+    Serial.println("SAM!");
     delay(500);
-    if (fireIsPutOut())
+    /*if (fireIsPutOut())
     {
       generateNewTimeToBurn();
-    }
-  }
+    }*/
+  /*}*/
 }
