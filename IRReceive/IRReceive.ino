@@ -2,7 +2,7 @@
 #include "PLab_IRremote.h"
 
 /*-----( Declare Constants )-----*/
-int receiver = 10; // pin 1 of IR receiver to Arduino digital pin 11
+int receiver = 2; // pin 1 of IR receiver to Arduino digital pin 11
 
 /*-----( Declare objects )-----*/
 IRrecv irrecv(receiver);           // create instance of 'irrecv'
@@ -24,9 +24,9 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
   if (irrecv.decode(&results)) // have we received an IR signal?
   {
 //    Serial.println(results.value, HEX);  UN Comment to see raw values
-    printIRcode(results.value); 
+    printIRcode(results.value);
     irrecv.resume(); // receive the next value
-  }  
+  }
 }/* --(end main loop )-- */
 
 /*-----( Declare User-written Functions )-----*/
@@ -35,7 +35,7 @@ void printIRcode(int value) // takes action based on IR code received
   switch(value)
   {
   case IR_UP: digitalWrite(13, HIGH); Serial.println(" UP"); break;
-  /*case IR_LEFT: Serial.println(" LEFT");    break;
+  case IR_LEFT: Serial.println(" LEFT");    break;
   case IR_OK: Serial.println(" -OK-");    break;
   case IR_RIGHT: Serial.println(" RIGHT");   break;
   case IR_DOWN: Serial.println(" DOWN"); break;
@@ -50,13 +50,10 @@ void printIRcode(int value) // takes action based on IR code received
   case IR_9: Serial.println(" 9");    break;
   case IR_STAR: Serial.println(" *");    break;
   case IR_0: Serial.println(" 0");    break;
-  case IR_HASH: Serial.println(" #");    break;*/
-  case IR_REPEAT: Serial.println(" REPEAT");break; 
-  default: 
+  case IR_HASH: Serial.println(" #");    break;
+  case IR_REPEAT: Serial.println(" REPEAT");break;
+  default:
     Serial.println(" other button   ");
     digitalWrite(13, LOW);
   }// End Case
 } //END translateIR
-
-
-

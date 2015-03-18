@@ -1,7 +1,45 @@
-void setup(){
-  //Setup Things...
+//IR Diode: Use pin 3.
+//Reflectance IR: A0.
+
+#include "PLab_IRremote.h"
+IRsend irsend;
+
+unsigned long IDENTITY = 4;
+
+void setup()
+{
+  Serial.begin(9600);
+  randomSeed(analogRead(7));
 }
 
-void loop(){
-  //Main program
+/*unsigned long timeToBurn = 1500;
+
+void generateNewTimeToBurn()
+{
+  // Will start to burn some time between 15 and 40 sec
+  timeToBurn = millis() + (1000 * random(15, 40));
+}
+
+boolean fireIsPutOut()
+{
+  // Right now: Fire is automatically put out after 13 sec
+  return (millis() > (timeToBurn + (13 * 1000)));
+}*/
+
+void loop()
+{
+  /*if (millis() > timeToBurn)
+  {*/
+    if(analogRead(0)< 30){
+      // WE'RE BURNING
+      // TELL SAMBOT
+      Serial.println("FIRE!");
+      irsend.sendNEC(IDENTITY, 32);
+    }
+    Serial.println(analogRead(0));
+    /*if (fireIsPutOut())
+    {
+      generateNewTimeToBurn();
+    }*/
+  /*}*/
 }
