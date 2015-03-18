@@ -9,6 +9,6 @@ void setup()
 void loop()
 {
   if (Serial.read() != -1) { //TODO: if Robot detects Fire (or buttonpress)
-    irsend.sendNEC(IR_UP, 32); //Send my position aka. destination
+    irsend.sendNEC(IR_UP, 32); //TODO: Send my position aka. destination
   }
 }
