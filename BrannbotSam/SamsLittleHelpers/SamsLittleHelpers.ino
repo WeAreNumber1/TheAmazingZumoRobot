@@ -1,5 +1,5 @@
-//How to install IR-Sensor
-//Use pin 3. Thats it! You're done!
+//IR Diode: Use pin 3.
+//Reflectance IR: A0.
 
 #include "PLab_IRremote.h"
 IRsend irsend;
