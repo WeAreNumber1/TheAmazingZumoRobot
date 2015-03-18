@@ -12,7 +12,7 @@ void setup()
   randomSeed(analogRead(7));
 }
 
-unsigned long timeToBurn = 1500;
+/*unsigned long timeToBurn = 1500;
 
 void generateNewTimeToBurn()
 {
@@ -24,17 +24,19 @@ boolean fireIsPutOut()
 {
   // Right now: Fire is automatically put out after 13 sec
   return (millis() > (timeToBurn + (13 * 1000)));
-}
+}*/
 
 void loop()
 {
   /*if (millis() > timeToBurn)
   {*/
-    // WE'RE BURNING
-    // TELL SAMBOT
-    irsend.sendNEC(IDENTITY, 32);
-    Serial.println("SAM!");
-    delay(500);
+    if(analogRead(0)< 30){
+      // WE'RE BURNING
+      // TELL SAMBOT
+      Serial.println("FIRE!");
+      irsend.sendNEC(IDENTITY, 32);
+    }
+    Serial.println(analogRead(0));
     /*if (fireIsPutOut())
     {
       generateNewTimeToBurn();
