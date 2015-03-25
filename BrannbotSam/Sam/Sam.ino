@@ -4,8 +4,6 @@
 #include <ZumoBuzzer.h>
 #include <ZumoMotors.h>
 #include <ZumoReflectanceSensorArray.h>
-// Skriv # define USE_IR (uten det første mellomrommet) for å bruke IR
-#define USE_IR
 
 ZumoReflectanceSensorArray reflectanceSensors;
 ZumoMotors motors;
@@ -16,19 +14,8 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-#ifdef USE_IR
-#include <PLab_IRremote.h>
-/*-----( Declare Constants )-----*/
-int receiver = 6; // pin 1 of IR receiver to Arduino digital pin 11
+int destination = 0;
 
-/*-----( Declare objects )-----*/
-IRrecv irrecv(receiver);           // create instance of 'irrecv'
-decode_results results;            // create instance of 'decode_results'
-/*-----( Declare Variables )-----*/
-int destination;
-#else
-int destination = 4;
-#endif
 
 void setup() {
   //Setup Things...
@@ -38,7 +25,7 @@ void setup() {
 
   // Wait for the user button to be pressed and released
   button.waitForButton();
-  delay(1000);
+  delay(500);
   int i;
   for (i = 0; i < 80; i++){
     if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
@@ -50,26 +37,11 @@ void setup() {
     // Since our counter runs to 80, the total delay will be
     // 80*20 = 1600 ms.
     delay(10);
-
   }
   motors.setSpeeds(200,0);
   delay(400);
   motors.setSpeeds(0,0);
-  /*button.waitForButton();*/
-#ifdef USE_IR
-  irrecv.enableIRIn(); // Start the receiver
-  irrecv.blink13(false); // DO not blink pin 13 as feedback.
-#endif
-  pinMode(13, OUTPUT);
-#ifdef USE_IR
-  //Wait IR message!
-  while(!(irrecv.decode(&results))) // have we received an IR signal?
-  {};
-  destination = IRcodeSetDestination(results.value);
-  irrecv.resume(); // receive the next value
-#else
   button.waitForButton();
-#endif
 
 }
 
@@ -136,16 +108,3 @@ void loop() {
     motors.setSpeeds(m1Speed, m2Speed);
   }
 }
-
-#ifdef USE_IR
-int IRcodeSetDestination(int value) // takes action based on IR code received
-{
-  switch(value)
-  {
-    case IR_1: return  1;
-    case IR_2: return  2;
-    case IR_3: return  3;
-    case IR_4: return  4;
-  }// End Case
-} //END translateIR
-#endif
