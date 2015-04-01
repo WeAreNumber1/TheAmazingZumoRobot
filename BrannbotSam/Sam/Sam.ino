@@ -26,7 +26,7 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-int destination = -1; //Write the destination here.
+int destination = 3; //Write the destination here.
 
 void setup() {
   //Setup Things...
@@ -51,18 +51,23 @@ void setup() {
   motors.setSpeeds(200,0);
   delay(400);
   /*button.waitForButton();*/
+}
 
-  irrecv.enableIRIn(); // Start the receiver
-  irrecv.blink13(false); // DO not blink pin 13 as feedback.
-  pinMode(13, OUTPUT);
+int sensorAverage(int sensors[]){
+  int sum = 0;
+  for (int i = 0; i < 6; i++)
+    sum += sensors[i];
+  return sum / 6;
+}
 
-  motors.setSpeeds(0,0);
-  while(!(irrecv.decode(&results))) // have we received an IR signal?
-  {
-    //do nothing
+int constrain(int value, int min, int max){
+  if (value < min){
+    return min;
+  } else if (value > max){
+    return max;
+  } else {
+    return value;
   }
-  destination = IRcodeSetDestination(results.value);
-
 }
 
 int cooldown = 0;
@@ -70,9 +75,7 @@ void loop() {
   //Main program
   unsigned int sensors[6];
 
-  // Get the position of the line.  Note that we *must* provide the "sensors"
-  // argument to readLine() here, even though we are not interested in the
-  // individual sensor readings
+  // Get the position of the line.
   int position = reflectanceSensors.readLine(sensors);
 
   // Our "error" is how far we are away from the center of the line, which
@@ -100,48 +103,27 @@ void loop() {
     motors.setSpeeds(0,0);
     delay(20);
     if (destination > 2 ){
+      //Continue past the line
       motors.setSpeeds(200,200);
       destination -= 2;
-     }else if (destination == 2){
+    }else if (destination == 2){
+      //Turn Left
       motors.setSpeeds(0,200);
     }else{
+      //Turn Right
       motors.setSpeeds(200,0);
     }
     delay(500);
     cooldown = 200;
   }else{
-  // Here we constrain our motor speeds to be between 0 and MAX_SPEED.
-  // Generally speaking, one motor will always be turning at MAX_SPEED
-  // and the other will be at MAX_SPEED-|speedDifference| if that is positive,
-  // else it will be stationary.  For some applications, you might want to
-  // allow the motor speed to go negative so that it can spin in reverse.
-  if (m1Speed < 0)
-    m1Speed = 0;
-  if (m2Speed < 0)
-    m2Speed = 0;
-  if (m1Speed > MAX_SPEED)
-    m1Speed = MAX_SPEED;
-  if (m2Speed > MAX_SPEED)
-    m2Speed = MAX_SPEED;
+    //Constraining and setting motor speeds.
+    motors.setSpeeds(
+      constrain(m1Speed, 0, MAX_SPEED),
+      constrain(m2Speed, 0, MAX_SPEED));
 
-  motors.setSpeeds(m1Speed, m2Speed);
-  if ( destination < 2 ){
-    delay(200);
-    motors.setSpeeds(0,0);
-  }
+    /*if ( destination < 2 ){
+      delay(200);
+      motors.setSpeeds(0,0);
+    }*/
   }
 }
-
-int IRcodeSetDestination(int value) // takes action based on IR code received
-{
-  switch(value)
-  {
-    case IR_1: return  1;
-    case IR_2: return  2;
-    case IR_3: return  3;
-    case IR_4: return  4;
-  /*default:
-    //Do something default...
-    motors.setSpeeds(0,0);*/
-  }// End Case
-} //END translateIR
