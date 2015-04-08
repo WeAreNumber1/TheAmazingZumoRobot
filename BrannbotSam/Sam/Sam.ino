@@ -99,7 +99,7 @@ void loop() {
 
   //Navigates to destination.
   cooldown --;
-  if (cooldown <= 0 && sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
+  if (cooldown <= 0 && sensorAverage(sensors) > BORDER_VALUE_LOW){ //sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
     motors.setSpeeds(0,0);
     delay(20);
     if (destination > 2 ){
