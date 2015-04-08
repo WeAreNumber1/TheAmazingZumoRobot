@@ -7,16 +7,6 @@
 #include <ZumoMotors.h>
 #include <Pushbutton.h>
 
-
-#include "PLab_IRremote.h"
-/*-----( Declare Constants )-----*/
-int receiver = 2; // pin 1 of IR receiver to Arduino digital pin 11
-
-/*-----( Declare objects )-----*/
-IRrecv irrecv(receiver);           // create instance of 'irrecv'
-decode_results results;            // create instance of 'decode_results'
-/*-----( Declare Variables )-----*/
-
 ZumoReflectanceSensorArray reflectanceSensors;
 ZumoMotors motors;
 Pushbutton button(ZUMO_BUTTON);
@@ -26,7 +16,11 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-int destination = 3; //Write the destination here.
+int destination = 3; // Write the destination here.
+unsigned int sensors[6];
+bool doUpdate = false; // Is true if followLine was not called this cycle.
+enum State { GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP };
+enum State state = GOTODEST;
 
 void setup() {
   //Setup Things...
@@ -50,30 +44,48 @@ void setup() {
   }
   motors.setSpeeds(200,0);
   delay(400);
+  reflectanceSensors.readLine(sensors);
   /*button.waitForButton();*/
 }
 
-int sensorAverage(int sensors[]){
+int sensorAverage(unsigned int sensors[]){
   int sum = 0;
   for (int i = 0; i < 6; i++)
     sum += sensors[i];
   return sum / 6;
 }
-
-int constrain(int value, int min, int max){
-  if (value < min){
-    return min;
-  } else if (value > max){
-    return max;
-  } else {
-    return value;
-  }
+int sensorMax(unsigned int sensors[]){
+  int max = 0;
+  for (int i = 0; i < 6; i++)
+    max = (max > sensors[i] ? max : sensors[i]);
+  return max;
+}
+bool perpLine(unsigned int sensors[]){ // Returns true if the sensors sense a perpendicular line.
+  return sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW;
+}
+bool noLine(unsigned int sensors[]){ // Returns true if the sensors can't sense a line.
+  return sensorMax(sensors) < 100;
 }
 
-int cooldown = 0;
-void loop() {
+void turnLeft (){
+  motors.setSpeeds(-50,200);
+  delay(500);
+}
+void turnRight(){
+  motors.setSpeeds(200,-50);
+  delay(500);
+}
+void turn180  (){
+  motors.setSpeeds(200,-200);
+  delay(750);
+}
+
+void updateSensors(){ // Updates the reflectance sensor array.
+  reflectanceSensors.readLine(sensors);
+}
+void followLine(){
   //Main program
-  unsigned int sensors[6];
+  //unsigned int sensors[6];
 
   // Get the position of the line.
   int position = reflectanceSensors.readLine(sensors);
@@ -97,33 +109,66 @@ void loop() {
   int m1Speed = MAX_SPEED + speedDifference;
   int m2Speed = MAX_SPEED - speedDifference;
 
-  //Navigates to destination.
-  cooldown --;
-  if (cooldown <= 0 && sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW){
-    motors.setSpeeds(0,0);
-    delay(20);
-    if (destination > 2 ){
-      //Continue past the line
-      motors.setSpeeds(200,200);
-      destination -= 2;
-    }else if (destination == 2){
-      //Turn Left
-      motors.setSpeeds(0,200);
-    }else{
-      //Turn Right
-      motors.setSpeeds(200,0);
-    }
-    delay(500);
-    cooldown = 200;
-  }else{
-    //Constraining and setting motor speeds.
-    motors.setSpeeds(
-      constrain(m1Speed, 0, MAX_SPEED),
-      constrain(m2Speed, 0, MAX_SPEED));
+  motors.setSpeeds(
+    constrain(m1Speed, 0, MAX_SPEED),
+    constrain(m2Speed, 0, MAX_SPEED));
+  doUpdate = false;
+}
 
-    /*if ( destination < 2 ){
-      delay(200);
-      motors.setSpeeds(0,0);
-    }*/
+void loop() {
+  doUpdate = true;
+  //Main program
+  // unsigned int sensors[6];
+
+  // Fills the sensor array.
+  // int position = reflectanceSensors.readLine(sensors);
+
+  switch (state){
+    case GOHOME:
+      while (!perpLine(sensors)) followLine();
+      if (destination == 2)
+        turnRight();
+      else
+        turnLeft();
+      while (!noLine(sensors)) followLine();
+      turn180();
+      state = STOP;
+      break;
+    case GOTODEST:
+      if (perpLine(sensors)){
+        motors.setSpeeds(0,0);
+        //delay(20);
+        if (destination > 2){
+          motors.setSpeeds(200, 200);
+          delay(200);
+          destination -= 2;
+        }
+        else if (destination == 2)
+          turnLeft();
+        else
+          turnRight();
+      }
+      else if (noLine(sensors)){
+        turn180();
+        state = GOHOME;
+      }
+      else
+        followLine();
+      break;
+    case STOPATLINE:
+
+      break;
+    case EXTINGUISH:
+
+      break;
+    case STOP:
+      motors.setSpeeds(0, 0);
+      break;
   }
+  if (doUpdate)
+    updateSensors();
+
+  //Change states
+
+
 }
