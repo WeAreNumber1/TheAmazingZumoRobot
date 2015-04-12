@@ -7,9 +7,10 @@
 #include <ZumoMotors.h>
 #include <ZumoBuzzer.h>
 #include <Pushbutton.h>
+#include "BluetoothCommunication.h"
 
 #include <NewServo.h>
-#define SERVO_PIN 6
+#define SERVO_PIN 0
 NewServo servo;
 int pos = 180;
 
@@ -60,7 +61,7 @@ void setup() {
     delay(1000);
   }
   buzzer.playNote(NOTE_A(5), 1000, 15);
-  accelerateOver(0, 200, 500, true); //Should be over the first line after calibration. Set to false if this is not true.
+  /*accelerateOver(0, 200, 500, true); //Should be over the first line after calibration. Set to false if this is not true.*/
   reflectanceSensors.readLine(sensors); // Setting initial value for sensor array.
 }
 
@@ -171,6 +172,7 @@ void loop() {
   BT_update();
   switch (state) {
   case HOME:
+  BT_sendHasReturned();
     if (BT_hasNewDestination())
     {
       if(BT_getDestination() != 0){
@@ -245,6 +247,7 @@ void loop() {
     putOutFire();
     while (!BT_shallReturn()){
       putOutFire();
+      BT_update();
     }
     state = GOHOME;
     turn180();
