@@ -9,7 +9,7 @@
 #include <Pushbutton.h>
 
 #include <NewServo.h>
-#define SERVO_PIN 6
+#define SERVO_PIN 0
 NewServo servo;
 int pos = 180;
 
@@ -23,14 +23,15 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-int startDest = 4;
+int startDest = 0; //0 is Home.
 int destination = startDest; // Write the destination here.
 unsigned int sensors[6];
 bool doUpdate = false; // Is true if followLine was not called this cycle.
-enum State { GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP };
-enum State state = GOTODEST;
+enum State { GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP, HOME };
+enum State state = HOME;
 
 void setup() {
+  BT_sendHasReturned();
   //Setup Things...
   servo.attach(SERVO_PIN);
   servo.write(pos);
@@ -156,12 +157,12 @@ void followLine   (int maxSpeed) { // Primary line following function.
 }
 
 void putOutFire(){
-  servo.write(80);              // tell servo to go to position in variable 'pos' 
+  servo.write(80);              // tell servo to go to position in variable 'pos'
   delay(20);
   servo.write(80);    //Just making sure that the thing is down.
   delay(5000);
 
-  servo.write(180);              // tell servo to go to position in variable 'pos' 
+  servo.write(180);              // tell servo to go to position in variable 'pos'
 
 }
 
@@ -169,6 +170,15 @@ void loop() {
   doUpdate = true;
 
   switch (state) {
+  case HOME:
+    //Wait for destination
+    BT_update();
+    //If Destination has changed, update destination.
+    if (BT_DESTINATION_CHANGED){
+      destination = BT_getDestination();
+      state = GOTODEST;
+    }
+    break;
   case GOHOME:
     while (!perpLine(sensors)) followLine();
     if (destination == 2)
@@ -178,12 +188,11 @@ void loop() {
     while (!noLine(sensors)) followLine();
     accelerateOver(200, 0, 250, false);
     turn180();
-    startDest -= 1;
-    destination = startDest;
-    beepNumber(destination);
+    startDest -= 0;
+    /*beepNumber(destination);*/
     if (startDest < 1) {
-      state = STOP;
-    } 
+      state = HOME;
+    }
     else {
       state = GOTODEST;
       accelerateOver(0, 200, 250, true);
@@ -241,10 +250,3 @@ void loop() {
   if (doUpdate)
     updateSensors();
 }
-
-
-
-
-
-
-
