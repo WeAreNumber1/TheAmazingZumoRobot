@@ -119,6 +119,14 @@ void turn180  () {
   motors.setSpeeds(200, -200);
   delay(750);
 }
+//<TEST CODE>
+void smoothTurn(int speed, bool left) { // True for left, false for right
+  for (int i = 2500; i <= 5000 && i >= 0; i += 5 * (left ? -1 : 1)){
+    followLine(speed, i);
+  }
+} // Should in theory provide a smooth turn. Will test on wednesday.
+
+//</TEST CODE>
 
 void updateSensors() { // Updates the reflectance sensor array.
   reflectanceSensors.readLine(sensors);
@@ -126,10 +134,13 @@ void updateSensors() { // Updates the reflectance sensor array.
 void followLine   () {
   followLine(MAX_SPEED);
 }
-void followLine   (int maxSpeed) { // Primary line following function.
+void followLine   (int maxSpeed) {
   // Get the position of the line.
   int position = reflectanceSensors.readLine(sensors);
 
+  followLine(maxSpeed, 0);
+}
+void followLine   (int maxSpeed, int position) { // Primary line following function.
   // Our "error" is how far we are away from the center of the line, which
   // corresponds to position 2500.
   int error = position - 2500;
