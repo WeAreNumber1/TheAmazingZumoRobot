@@ -159,10 +159,7 @@ void followLine   (int maxSpeed) { // Primary line following function.
 
 void putOutFire(){
   servo.write(80);              // tell servo to go to position in variable 'pos'
-  delay(20);
-  servo.write(80);    //Just making sure that the thing is down.
-  delay(5000);
-
+  delay(5000); //Wait until fire is extinguished.
   servo.write(180);              // tell servo to go to position in variable 'pos'
 
 }
