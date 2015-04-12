@@ -23,14 +23,15 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-int startDest = 4;
+int startDest = 0; //HOME
 int destination = startDest; // Write the destination here.
 unsigned int sensors[6];
 bool doUpdate = false; // Is true if followLine was not called this cycle.
-enum State { GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP };
-enum State state = GOTODEST;
+enum State { HOME, GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP };
+enum State state = HOME;
 
 void setup() {
+  btSerial.begin(9600);
   //Setup Things...
   servo.attach(SERVO_PIN);
   servo.write(pos);
@@ -77,22 +78,22 @@ int sign(int val) { // Returns -1, 0 or 1 based on the sign of val.
   return (val > 0) - (val < 0);
 }
 
-int sensorAverage (unsigned int sensors[]) { // Returns average value of sensor array.
+int sensorAverage(unsigned int sensors[]) { // Returns average value of sensor array.
   int sum = 0;
   for (int i = 0; i < 6; i++)
     sum += sensors[i];
   return sum / 6;
 }
-int sensorMax     (unsigned int sensors[]) { // Returns highest value in sensor array.
+int sensorMax(unsigned int sensors[]) { // Returns highest value in sensor array.
   int max = 0;
   for (int i = 0; i < 6; i++)
     max = (max > sensors[i] ? max : sensors[i]);
   return max;
 }
-bool perpLine     (unsigned int sensors[]) { // Returns true if the sensors sense a perpendicular line.
+bool perpLine(unsigned int sensors[]) { // Returns true if the sensors sense a perpendicular line.
   return sensors[0] > BORDER_VALUE_LOW && sensors[5] > BORDER_VALUE_LOW;
 }
-bool noLine       (unsigned int sensors[]) { // Returns true if the sensors can't sense a line.
+bool noLine(unsigned int sensors[]) { // Returns true if the sensors can't sense a line.
   return sensorMax(sensors) < 100;
 }
 
@@ -107,7 +108,7 @@ void accelerateOver(int startSpeed, int goalSpeed, float duration, bool doFollow
     }
   }
 }
-void turnLeft () {
+void turnLeft() {
   motors.setSpeeds(-100, 200);
   delay(500);
 }
@@ -115,7 +116,7 @@ void turnRight() {
   motors.setSpeeds(200, -100);
   delay(500);
 }
-void turn180  () {
+void turn180() {
   motors.setSpeeds(200, -200);
   delay(750);
 }
@@ -156,19 +157,29 @@ void followLine   (int maxSpeed) { // Primary line following function.
 }
 
 void putOutFire(){
-  servo.write(80);              // tell servo to go to position in variable 'pos' 
+  servo.write(80);              // tell servo to go to position in variable 'pos'
   delay(20);
   servo.write(80);    //Just making sure that the thing is down.
   delay(5000);
 
-  servo.write(180);              // tell servo to go to position in variable 'pos' 
+  servo.write(180);              // tell servo to go to position in variable 'pos'
 
 }
 
 void loop() {
   doUpdate = true;
-
+  BT_update();
   switch (state) {
+  case HOME:
+    if (BT_hasNewDestination())
+    {
+      if(BT_getDestination() != 0){
+        destination = BT_getDestination();
+        state = GOTODEST;
+      }
+    }
+
+    break;
   case GOHOME:
     while (!perpLine(sensors)) followLine();
     if (destination == 2)
@@ -178,12 +189,13 @@ void loop() {
     while (!noLine(sensors)) followLine();
     accelerateOver(200, 0, 250, false);
     turn180();
-    startDest -= 1;
+    startDest = 0;
     destination = startDest;
-    beepNumber(destination);
+    beepNumber(destination); //This doesnt make sense anymore..
     if (startDest < 1) {
-      state = STOP;
-    } 
+      state = HOME;
+      BT_sendHasReturned();
+    }
     else {
       state = GOTODEST;
       accelerateOver(0, 200, 250, true);
@@ -231,6 +243,9 @@ void loop() {
     //   // turn180();
     // }
     putOutFire();
+    while (!BT_shallReturn()){
+      putOutFire();
+    }
     state = GOHOME;
     turn180();
     break;
@@ -241,10 +256,3 @@ void loop() {
   if (doUpdate)
     updateSensors();
 }
-
-
-
-
-
-
-
