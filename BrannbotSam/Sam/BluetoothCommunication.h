@@ -10,4 +10,6 @@ boolean BT_shallReturn();
 boolean BT_hasNewDestination();
 void BT_update();
 
+extern BTSerial btSerial;
+
 #endif
