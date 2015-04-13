@@ -1,25 +1,19 @@
-//IR Diode: Use pin 3.
-//Reflectance IR: A0.
+//IR Diode (sender): Use pin 3.
+//Reflectance IR (fire detecter): A0.
+#define BTrxPin 2   // Only on master-bot. Connect this to pin RXD on the BT unit.
+#define BTtxPin 6   // Only on master-bot. Connect this to pin TXD on the BT unit.
+const int IRReceiverPin = 11; // Only on master-bot, connect this to IR Remote receiver
+const int ledPin = 13;
+
 #include "PLab_IRremote.h"
 #include <EEPROM.h>
-
-// Next line must be "#define MASTER_BOT" if this bot should communicate with Sam through Bluetooth.
-
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
 
-#define rxPin 2   // Connect this to pin RXD on the BT unit.
-#define txPin 6   // Connect this to pin TXD on the BT unit.
-const int IRReceiverPin = 11;
-
 PLabBTSerial btSerial(txPin, rxPin);
-
-
 IRrecv irrecv(IRReceiverPin);
 decode_results results;
-
 byte destination = 0;
-
 
 IRsend irsend;
 
@@ -27,7 +21,6 @@ byte IDENTITY;
 boolean IS_MASTER_BOT;
 unsigned long IR_BURNING;
 unsigned long IR_PUT_OUT; // IDENTITY + 4
-const int ledPin = 13;
 
 const int FIRE_THRESHOLD = 1000;
 const byte FIRE_DEBOUNCE = 10;  // Number of measurements in a row which must be 'positive' for the fire to be registered
@@ -42,7 +35,6 @@ byte state;
 
 void setup()
 {
-  randomSeed(analogRead(7));  // Avoid same pattern every time
   pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   
@@ -58,7 +50,7 @@ void setup()
   } else {
     IS_MASTER_BOT = (boolean) isMasterBot;
   }
-  // Update IR_BURNING and IR_PUT_OUT
+  // Update IR_BURNING and IR_PUT_OUT (IR-signals)
   switch(IDENTITY)
   {
     case 1:
@@ -88,8 +80,11 @@ void setup()
     btSerial.begin(9600);
     irrecv.enableIRIn(); // Start the receiver
     irrecv.blink13(false); // Do not blink pin 13 as feedback.
-    Serial.println("Starting up.");
   }
+  Serial.print("Starting up. Number: ");
+  Serial.print(IDENTITY);
+  Serial.print(". Is master-bot:");
+  Serial.println(IS_MASTER_BOT);
 }
 
 /*unsigned long timeToBurn = 1500;
@@ -115,7 +110,7 @@ const char BT_END[] = "\r\n";
 unsigned long bluetoothSendTime = 0;
 
 byte lastAskedState = 0;
-
+// Returns true the first time it's called, after a state change
 boolean isFirstRun()
 {
   if (lastAskedState != state)
@@ -129,6 +124,30 @@ boolean isFirstRun()
   }
 }
 
+// Function to blink led
+unsigned long timeToSwitch = 0;
+boolean ledTurnedOn = false;
+
+void blinkLed(int durationOn, int durationOff) 
+{
+  // blink ligth
+  if (timeToSwitch < millis())
+  {
+    if (ledTurnedOn)
+    {
+      digitalWrite(ledPin, LOW);
+      ledTurnedOn = false;
+      timeToSwitch = millis() + durationOff;
+    } else {
+      digitalWrite(ledPin, HIGH);
+      ledTurnedOn = true;
+      timeToSwitch = millis() + durationOn;
+    }
+  }
+}
+
+
+// Called during idle-state. Checks for fire.
 byte fireStartedCounter = 0;
 boolean fireWasPutOut = false;
 unsigned long timeToSendIR = 0;
@@ -141,18 +160,20 @@ void loopIdle()
     timeToSendIR = millis() + 500;
   }
   
+  // Fire detected?
   if(analogRead(0)< FIRE_THRESHOLD){
     ++fireStartedCounter;
   } else {
     fireStartedCounter = 0;
   }
   
+  // Fire detected for some time, warn
   if (fireStartedCounter > FIRE_DEBOUNCE) {
     // WE'RE BURNING
     // TELL SAMBOT
     if (IS_MASTER_BOT)
     {
-      destination = IDENTITY; // WE are the ones burning
+      destination = IDENTITY; // master bot is burning
     }
     state = STATE_ON_FIRE;
     Serial.println("OMFG I'M ON FIRE");
@@ -165,6 +186,7 @@ void loopIdle()
   /*}*/
 }
 
+// Part of idle loop, specific for master bot - act on messages from other bots
 void loopIdleMB()
 {
   if (irrecv.decode(&results)) // have we received an IR signal?
@@ -191,29 +213,7 @@ void loopIdleMB()
   }
 }
 
-
-unsigned long timeToSwitch = 0;
-boolean ledTurnedOn = false;
-
-void blinkLed(int durationOn, int durationOff) 
-{
-  // blink ligth
-  if (timeToSwitch < millis())
-  {
-    if (ledTurnedOn)
-    {
-      digitalWrite(ledPin, LOW);
-      ledTurnedOn = false;
-      timeToSwitch = millis() + durationOff;
-    } else {
-      digitalWrite(ledPin, HIGH);
-      ledTurnedOn = true;
-      timeToSwitch = millis() + durationOn;
-    }
-  }
-}
-
-
+// Called during fire state. Warn the master bot or Sam about our own fire.
 byte firePutOutCounter = 0;
 void loopOnFire()
 {
@@ -252,7 +252,7 @@ void loopOnFire()
   }
 }
 
-
+// Master-bot, alerts Sam about a fire at another helper bot.
 void loopWarn()
 {  
   if (isFirstRun())
@@ -294,10 +294,9 @@ void loopWarn()
   }
 }
 
-
+// Master-bot, call and wait for Sam to return home.
 void loopReturn()
 {
-  //if (millis() > bluetoothSendTime)
   if (isFirstRun())
   {
     bluetoothSendTime = millis() + 200;
@@ -319,7 +318,7 @@ void loopReturn()
   }
 }
 
-
+// This is where the action takes place
 void loop()
 {
   switch(state)
@@ -332,10 +331,12 @@ void loop()
         loopIdleMB();  // Check if received message about fire
       }
       break;
+      
     case STATE_ON_FIRE:
       blinkLed(50, 450);
       loopOnFire();  // Warn master-bot about fire, check if fire is put out
       break;
+      
     case STATE_WARN:
       blinkLed(200,200);
       if (IS_MASTER_BOT)
@@ -345,6 +346,7 @@ void loop()
         state = STATE_ERROR;  // you shouldn't be warning us when you're just a slave, stupid
       }
       break;
+      
     case STATE_RETURN:
       blinkLed(500, 200);
       if (IS_MASTER_BOT) 
@@ -356,6 +358,7 @@ void loop()
         state = STATE_ERROR;
       }
       break;
+      
     default:
       // Not recognized, just do some blinking to alert our masters
       blinkLed(450, 50);
