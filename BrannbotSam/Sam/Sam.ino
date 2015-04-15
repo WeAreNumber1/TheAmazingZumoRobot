@@ -169,15 +169,13 @@ void loop() {
   BT_update();
   switch (state) {
   case HOME:
-  BT_sendHasReturned();
     if (BT_hasNewDestination())
-    {
-      if(BT_getDestination() != 0){
-        destination = BT_getDestination();
-        state = GOTODEST;
+      {
+        if(BT_getDestination() != 0){
+          destination = BT_getDestination();
+          state = GOTODEST;
+        }
       }
-    }
-
     break;
   case GOHOME:
     while (!perpLine(sensors)) followLine();
