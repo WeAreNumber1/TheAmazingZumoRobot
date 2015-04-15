@@ -5,7 +5,8 @@
 const int IRReceiverPin = 11; // Only on master-bot, connect this to IR Remote receiver
 const int ledPin = 13;
 // True: IR      False: Serial / internet
-const boolean USE_IR = true;
+const boolean USE_IR = false;
+const boolean DEBUG = false;
 
 /* The following must be true for the serial/internet communication to work:
   PLab Simple Internet.
@@ -48,8 +49,8 @@ byte robotSaved = 0;
 
 IRsend irsend;
 
-byte IDENTITY = EEPROM.read(0);
-byte NEXT;
+const byte IDENTITY = EEPROM.read(0);
+const byte MASTER_BOT_ID = 1;
 boolean IS_MASTER_BOT;
 unsigned long IR_BURNING;
 unsigned long IR_PUT_OUT; // IDENTITY + 4
@@ -70,14 +71,7 @@ byte state;
 void setup()
 {
   pinMode(ledPin, OUTPUT);
-  Serial.begin(9600);
-  
-  if (IDENTITY == 4)
-  {
-    NEXT = 1;
-  } else {
-    NEXT = IDENTITY + 1;
-  }
+  if (DEBUG) Serial.begin(9600);
 
   state = STATE_IDLE;
   
@@ -123,13 +117,19 @@ void setup()
   if (IS_MASTER_BOT)
   {
     btSerial.begin(9600);
-    irrecv.enableIRIn(); // Start the receiver
-    irrecv.blink13(false); // Do not blink pin 13 as feedback.
+    if (USE_IR) 
+    {
+      irrecv.enableIRIn(); // Start the receiver
+      irrecv.blink13(false); // Do not blink pin 13 as feedback.
+    }
   }
-  Serial.print("Starting up. Number: ");
-  Serial.print(IDENTITY);
-  Serial.print(". Is master-bot:");
-  Serial.println(IS_MASTER_BOT);
+  if (DEBUG)
+  {
+    Serial.print("Starting up. Number: ");
+    Serial.print(IDENTITY);
+    Serial.print(". Is master-bot:");
+    Serial.println(IS_MASTER_BOT);
+  }
 }
 
 /*unsigned long timeToBurn = 1500;
@@ -154,14 +154,14 @@ void onMessageReceived(byte senderID, String message)
     // We can handle this ourselves
     if (message.charAt(0) == 'F' && (state == STATE_IDLE || state == STATE_RETURN))  // Fire
     {
-      robotInDistress = byte(message.charAt(1));
+      robotInDistress = byte(message.charAt(1))-48;
     } else if (message.charAt(0) == 'P' && state == STATE_WARN)  // Put out
     {
-      robotSaved = byte(message.charAt(1));
+      robotSaved = byte(message.charAt(1))-48;
     }
   } else {
     // Send this to the next robot (who may be master)
-    internet.sendMessage(NEXT, message);
+    internet.sendMessage(MASTER_BOT_ID, message);
   }
 }
 
@@ -175,17 +175,23 @@ const char BT_END[] = "\r\n";
 unsigned long bluetoothSendTime = 0;
 
 byte lastAskedState = 0;
+boolean firstRun = true;
 // Returns true the first time it's called, after a state change
 boolean isFirstRun()
+{
+  return firstRun;
+}
+
+void updateFirstRun()
 {
   if (lastAskedState != state)
   {
     lastAskedState = state;
-    return true;
+    firstRun = true;
   }
   else
   {
-    return false;
+    firstRun = false;
   }
 }
 
@@ -226,7 +232,7 @@ void loopIdle()
     {
       irsend.sendNEC(IR_PUT_OUT, 32);
     } else {
-      internet.sendMessage(NEXT, "P" + IDENTITY);
+      internet.sendMessage(MASTER_BOT_ID, "P" + (IDENTITY+48));
     }
   }
 
@@ -246,7 +252,7 @@ void loopIdle()
       destination = IDENTITY; // master bot is burning
     }
     state = STATE_ON_FIRE;
-    Serial.println("OMFG I'M ON FIRE");
+    if (DEBUG) Serial.println("OMFG I'M ON FIRE");
   }
 //    Serial.println(analogRead(0));
     /*if (fireIsPutOut())
@@ -259,7 +265,10 @@ void loopIdle()
 // Part of idle loop, specific for master bot - act on messages from other bots
 void loopIdleMB()
 {
-  destination = 0;
+  if (state == STATE_ON_FIRE)
+  {
+    return;
+  }
   if (USE_IR && irrecv.decode(&results)) // have we received an IR signal?
   {
     switch(results.value)
@@ -274,7 +283,6 @@ void loopIdleMB()
         break;
     }
 
-
     irrecv.resume(); // receive the next value
   } else if (!USE_IR && robotInDistress)
   {
@@ -285,8 +293,11 @@ void loopIdleMB()
   if (destination != 0)
   {
     state = STATE_WARN;
-    Serial.print("Sam!!! There's a fire at helperbot #0");
-    Serial.println(destination);
+    if (DEBUG)
+    {
+      Serial.print("Sam!!! There's a fire at helperbot #0");
+      Serial.println(destination);
+    }
   }
     
 }
@@ -303,7 +314,7 @@ void loopOnFire()
     {
       irsend.sendNEC(IR_BURNING, 32);
     } else if(millis() > triggerTimeInternetWarning) {
-      internet.sendMessage(NEXT, "F" + IDENTITY);
+      internet.sendMessage(MASTER_BOT_ID, "F" + (IDENTITY+48));
       triggerTimeInternetWarning = millis() + 1000;
     }
   } else if (isFirstRun())
@@ -327,12 +338,13 @@ void loopOnFire()
     digitalWrite(ledPin, LOW);
     if (IS_MASTER_BOT)
     {
+      destination = 0;
       state = STATE_RETURN;
-      Serial.println("Fire put out. Get back home, Sam!");
+      if (DEBUG) Serial.println("Fire put out. Get back home, Sam!");
     } else {
       fireWasPutOut = true;
       state = STATE_IDLE;
-      Serial.println("Fire put out. Great work, Sam!");
+      if (DEBUG) Serial.println("Fire put out. Great work, Sam!");
     }
   }
 }
@@ -410,7 +422,6 @@ void loopReturn()
       }
     }
   }
-  
 }
 
 // This is where the action takes place
@@ -420,7 +431,7 @@ void loop()
   {
     internet.update();
   }
-  
+  updateFirstRun();
   switch(state)
   {
     case STATE_IDLE:
