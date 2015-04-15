@@ -412,15 +412,14 @@ void loopReturn()
 
   // Has Sam returned home?
   int result = -1;
-  int availableCount = btSerial.available();
-  while (availableCount > 1)
+  while (btSerial.available() > 1)
   {
     if (btSerial.read() == 'H')
     {
       if (btSerial.read() == 'R')
       {
         state = STATE_IDLE;
-        Serial.println("Welcome back, Sam!");
+        if (DEBUG) Serial.println("Welcome back, Sam!");
       }
     }
   }

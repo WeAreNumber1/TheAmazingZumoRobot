@@ -27,10 +27,7 @@ PLabBTSerial btSerial(txPin, rxPin);
  */
 void BT_sendHasReturned()
 {
-  btSerial.write('H');
-  btSerial.write('R');
-  btSerial.write('\r');
-  btSerial.write('\n');
+  btSerial.write("HR\r\n");
   BT_SHALL_RETURN = false;
 }
 
