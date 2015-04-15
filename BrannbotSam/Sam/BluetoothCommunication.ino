@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
 
-#define rxPin 2   // Connect this to pin RXD on the BT unit.
+#define rxPin 1   // Connect this to pin RXD on the BT unit.
 #define txPin 6   // Connect this to pin TXD on the BT unit.
 const byte maxDestination = 4; // This is hard-coded to be 4 in SamHelperBots (IR-messages), please don't change
 const byte ASCII_NUM_OFFSET = 48;
