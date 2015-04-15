@@ -151,24 +151,19 @@ void onMessageReceived(byte senderID, String message)
 {
   if (IS_MASTER_BOT)
   {
-    // We can handle this ourselves
-    if (message.charAt(0) == 'F' && (state == STATE_IDLE || state == STATE_RETURN))  // Fire
+    byte number = byte(message.charAt(0))-48;
+    if (number > 0 && number < 5 && (state == STATE_IDLE || state == STATE_RETURN))
     {
-      destination = byte(message.charAt(1))-48;
+      destination = number;
       state = STATE_WARN;
-    } else if (message.charAt(0) == 'P' && state == STATE_WARN)  // Put out
+    } else if (number > 4 && number < 9 && state == STATE_WARN)
     {
-      robotSaved = byte(message.charAt(1))-48;
-      if (robotSaved == destination)
+      if ((number-4) == destination)
       {
         state = STATE_RETURN;
         destination = 0;
       }
-      if (robotSaved < 0 || robotSaved > 4) state = STATE_ERROR;
     }
-  } else {
-    // Send this to the next robot (who may be master)
-    internet.sendMessage(MASTER_BOT_ID, message);
   }
 }
 
@@ -239,7 +234,7 @@ void loopIdle()
     {
       irsend.sendNEC(IR_PUT_OUT, 32);
     } else {
-      internet.sendMessage(MASTER_BOT_ID, "P" + char(IDENTITY+48));
+      internet.sendMessage(MASTER_BOT_ID, (String) char(IDENTITY+48+4));
     }
   }
 
@@ -321,7 +316,7 @@ void loopOnFire()
     {
       irsend.sendNEC(IR_BURNING, 32);
     } else if(millis() > triggerTimeInternetWarning) {
-      internet.sendMessage(MASTER_BOT_ID, "F" + char(IDENTITY+48));
+      internet.sendMessage(MASTER_BOT_ID, (String) char(IDENTITY+48));
       triggerTimeInternetWarning = millis() + 1000;
     }
   } else if (isFirstRun())
