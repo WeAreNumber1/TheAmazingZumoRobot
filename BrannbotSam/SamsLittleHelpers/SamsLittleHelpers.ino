@@ -420,9 +420,17 @@ void loopReturn()
       {
         state = STATE_IDLE;
         if (DEBUG) Serial.println("Welcome back, Sam!");
+        // empty buffer
+        while (btSerial.available())
+        {
+          btSerial.read();
+        }
+        break;
       }
     }
   }
+  
+  
 }
 
 // This is where the action takes place
