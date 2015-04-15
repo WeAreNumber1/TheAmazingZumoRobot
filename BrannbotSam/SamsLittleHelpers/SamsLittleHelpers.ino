@@ -152,7 +152,7 @@ void onMessageReceived(byte senderID, String message)
   if (IS_MASTER_BOT)
   {
     byte number = byte(message.charAt(0))-48;
-    if (number > 0 && number < 5 && (state == STATE_IDLE || state == STATE_RETURN))
+    if (number > 0 && number < 5 && state == STATE_IDLE)
     {
       destination = number;
       state = STATE_WARN;
@@ -171,7 +171,7 @@ void onMessageReceived(byte senderID, String message)
 // Bluetooth communication
 const char BT_GOTO[] = "G";
 const char BT_RETURN[] = "R";
-const char BT_HAS_RETURNED[] = "HR";
+const char BT_HAS_RETURNED[] = "R";
 const char BT_END[] = "\r\n";
 
 unsigned long bluetoothSendTime = 0;
@@ -473,8 +473,8 @@ void loop()
       if (IS_MASTER_BOT)
       {
         loopReturn();  // ask Sam to go home
-        loopIdle(); // check if we are burning
-        loopIdleMB(); // check if anyone else is burning
+        //loopIdle(); // check if we are burning
+        //loopIdleMB(); // check if anyone else is burning
       } else {
         state = STATE_ERROR;
       }
