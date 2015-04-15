@@ -57,8 +57,8 @@ unsigned long IR_PUT_OUT; // IDENTITY + 4
 
 PLab_Internet internet(IDENTITY);
 
-const int FIRE_THRESHOLD = 1000;
-const byte FIRE_DEBOUNCE = 10;  // Number of measurements in a row which must be 'positive' for the fire to be registered
+const int FIRE_THRESHOLD = 750;
+const byte FIRE_DEBOUNCE = 20;  // Number of measurements in a row which must be 'positive' for the fire to be registered
 
 const byte STATE_INIT = 0;
 const byte STATE_IDLE = 1;
