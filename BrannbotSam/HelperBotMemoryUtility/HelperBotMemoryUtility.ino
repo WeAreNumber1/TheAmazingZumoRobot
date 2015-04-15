@@ -1,34 +1,31 @@
 #include <EEPROM.h>
 
-byte IDENTITY;  // position in the world
-byte IS_MASTER; // 1 if this is master-bot, 0 if not.
+byte IDENTITY;
+byte IS_MASTER;
 
 void setup()
 {
   Serial.begin(9600);
   Serial.println("------------------------------------------------------");
-  Serial.println("Please make sure you're using 'Newline'.");
-  delay(1000);
-  Serial.println("Current status (255 = not set):");
-  // Read data from memory
+  Serial.println("Please make sure you're using 'Newline' (\\n)");
+  Serial.println("This is the status of this helper-bot (255 = not set):");
   IDENTITY = EEPROM.read(0);
-  IS_MASTER = EEPROM.read(sizeof(byte));  // the byte after IDENTITY
-  Serial.print("Number: ");
+  IS_MASTER = EEPROM.read(sizeof(byte));
+  Serial.print("Number:\t");
   Serial.println(IDENTITY);
-  Serial.print("Is master-bot: ");
+  Serial.print("Is master-bot:\t");
   Serial.println(IS_MASTER);
   
   Serial.println();
-  Serial.println("Hit [enter] to edit.");
+  Serial.println("Hit enter if you want to change anything.");
   
-  // Keep us occupied while waiting for response
   while (Serial.available() == 0)
   { delay(50);
-  } // clean up the buffer
+  }
   while (Serial.read() != '\n') {}
   
-  Serial.println("New number? [1-4]");
-  int newIdentity = 0; // 0 = not valid
+  Serial.println("Which identity/number should this helper-bot be? [1-4]");
+  int newIdentity = 0;
   
   do {
     newIdentity = Serial.parseInt();
@@ -41,13 +38,12 @@ void setup()
   Serial.read(); // throw away newline
   
   
-  Serial.println("Master-bot? [y or n]");
+  Serial.println("Shall this be the master-bot (the one communicating with Sam)? y or n");
   boolean validAnswer = false;
   boolean newIsMaster;
   
   while (!validAnswer)
   {
-    // keep us occupied - again - while waiting for answer
     while (Serial.available() == 0) {
       delay(50);
     }
@@ -68,26 +64,24 @@ void setup()
       
   Serial.println();
   delay(500);
-  Serial.println("Please confirm that this is correct:");
+  Serial.println("Please confirm the following information:");
   delay(1000);
-  Serial.print("New identity/number: ");
+  Serial.print("New identity/number:\t");
   Serial.println(newIdentity);
   delay(1000);
-  Serial.print("Is master: ");
-  Serial.println(newIsMaster); // true -> 1, false -> 0
+  Serial.print("New master:\t");
+  Serial.println(newIsMaster);
   
   delay(1000);
-  // empty buffer
   while (Serial.available() > 0)
   {
     Serial.read();
   }
   
   
-  Serial.println("Press [enter] to write these changes to memory.");
+  Serial.println("Press enter to write these changes to memory.");
   Serial.println("Press the red reset-button if there's something wrong.");
   
-  // continue once data comes
   while (Serial.available() == 0)
   { delay(50);
   }
@@ -113,5 +107,5 @@ void setup()
 
 void loop()
 {
-  delay(1000);
+  
 }
