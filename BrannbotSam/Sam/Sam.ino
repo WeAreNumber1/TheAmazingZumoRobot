@@ -24,12 +24,12 @@ const int MAX_SPEED = 200;
 // Define thresholds for border
 #define BORDER_VALUE_LOW  400 // border low
 
-int startDest = 4; //HOME
+int startDest = 0; //HOME
 int destination = startDest; // Write the destination here.
 unsigned int sensors[6];
 bool doUpdate = false; // Is true if followLine was not called this cycle.
-enum State { HOME, GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP, TEST };
-enum State state = GOTODEST;
+enum State { HOME, GOHOME, GOTODEST, STOPATLINE, EXTINGUISH, STOP };
+enum State state = HOME;
 
 void setup() {
   btSerial.begin(9600);
@@ -56,11 +56,11 @@ void setup() {
     delay(10);
   }
   motors.setSpeeds(0, 0);
-  /*for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     buzzer.playNote(NOTE_A(4), 500, 15);
     delay(1000);
   }
-  buzzer.playNote(NOTE_A(5), 1000, 15);*/
+  buzzer.playNote(NOTE_A(5), 1000, 15);
   /*accelerateOver(0, 200, 500, true); //Should be over the first line after calibration. Set to false if this is not true.*/
   reflectanceSensors.readLine(sensors); // Setting initial value for sensor array.
 }
@@ -121,38 +121,17 @@ void turn180() {
   motors.setSpeeds(200, -200);
   delay(750);
 }
-//<TEST CODE>
-int n = 0;
-int dir = 20;
-void drunkFollowLine(int speed) { // True for left, false for right
-  dir = (n < -2000) ? 20 : (n > 2000) ? -20 : dir;
-  n += dir;
-
-  int position = reflectanceSensors.readLine(sensors);
-
-  followLine(speed, position + n);
-} // Drunken follow line
-
-//</TEST CODE>
-
 
 void updateSensors() { // Updates the reflectance sensor array.
   reflectanceSensors.readLine(sensors);
 }
 void followLine   () {
   followLine(MAX_SPEED);
-
 }
-void followLine   (int maxSpeed){
+void followLine   (int maxSpeed) { // Primary line following function.
   // Get the position of the line.
-  drunkFollowLine(maxSpeed); // FUCKING STUPID CODE
-  /* ACTUAL CODE HERE
   int position = reflectanceSensors.readLine(sensors);
 
-  followLine(maxSpeed, position);*/
-}
-
-void followLine   (int maxSpeed, int position) { // Primary line following function.
   // Our "error" is how far we are away from the center of the line, which
   // corresponds to position 2500.
   int error = position - 2500;
@@ -207,9 +186,9 @@ void loop() {
     while (!noLine(sensors)) followLine();
     accelerateOver(200, 0, 250, false);
     turn180();
-    startDest -= 1;
+    startDest = 0;
     destination = startDest;
-    //beepNumber(destination); //This doesnt make sense anymore..
+    beepNumber(destination); //This doesnt make sense anymore..
     if (startDest < 1) {
       state = HOME;
       BT_sendHasReturned();
@@ -238,8 +217,7 @@ void loop() {
     }
     else if (noLine(sensors)) {
       motors.setSpeeds(0,0);
-      turn180();
-      state = GOHOME;
+      state = EXTINGUISH;
     }
     else
       followLine();
@@ -271,8 +249,6 @@ void loop() {
     break;
   case STOP:
     motors.setSpeeds(0, 0);
-    break;
-  case TEST:
     break;
   }
   if (doUpdate)
