@@ -33,11 +33,11 @@ const boolean DEBUG = false;
      void onReceive( void (*)(byte,String) );  // Define callback function
 */
 
-#include "PLab_IRremote.h"
+#include <PLab_IRremote.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
-#include "PLabInternet.h"
+#include <PLabInternet.h>
 
 PLabBTSerial btSerial(BTtxPin, BTrxPin);
 IRrecv irrecv(IRReceiverPin);
@@ -154,10 +154,17 @@ void onMessageReceived(byte senderID, String message)
     // We can handle this ourselves
     if (message.charAt(0) == 'F' && (state == STATE_IDLE || state == STATE_RETURN))  // Fire
     {
-      robotInDistress = byte(message.charAt(1))-48;
+      destination = byte(message.charAt(1))-48;
+      state = STATE_WARN;
     } else if (message.charAt(0) == 'P' && state == STATE_WARN)  // Put out
     {
       robotSaved = byte(message.charAt(1))-48;
+      if (robotSaved == destination)
+      {
+        state = STATE_RETURN;
+        destination = 0;
+      }
+      if (robotSaved < 0 || robotSaved > 4) state = STATE_ERROR;
     }
   } else {
     // Send this to the next robot (who may be master)
@@ -232,7 +239,7 @@ void loopIdle()
     {
       irsend.sendNEC(IR_PUT_OUT, 32);
     } else {
-      internet.sendMessage(MASTER_BOT_ID, "P" + (IDENTITY+48));
+      internet.sendMessage(MASTER_BOT_ID, "P" + char(IDENTITY+48));
     }
   }
 
@@ -314,7 +321,7 @@ void loopOnFire()
     {
       irsend.sendNEC(IR_BURNING, 32);
     } else if(millis() > triggerTimeInternetWarning) {
-      internet.sendMessage(MASTER_BOT_ID, "F" + (IDENTITY+48));
+      internet.sendMessage(MASTER_BOT_ID, "F" + char(IDENTITY+48));
       triggerTimeInternetWarning = millis() + 1000;
     }
   } else if (isFirstRun())
@@ -431,7 +438,15 @@ void loop()
   {
     internet.update();
   }
+  
   updateFirstRun();
+  
+  if (isFirstRun())
+  {
+    timeToSwitch = millis();
+    delay(1);
+  }
+  
   switch(state)
   {
     case STATE_IDLE:
